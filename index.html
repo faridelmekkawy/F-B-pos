@@ -459,6 +459,41 @@ body{background:var(--bg)!important;}
 #vendor-app-root{width:100%;}
 /* ensure footer matches */
 .footer{margin:24px 0 8px;color:var(--muted);text-align:center;font-weight:600;}
+/* ===== INPUT NORMALIZER (fix weird textbox look) ===== */
+.field-input, .field-select, textarea.field-input,
+input[type="text"], input[type="number"], input[type="email"],
+input[type="password"], input[type="date"], select, textarea{
+  height: 38px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+/* textarea should grow, not forced to 38px */
+textarea.field-input, textarea{
+  height: auto;
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* consistent focus */
+.field-input:focus, .field-select:focus,
+input:focus, select:focus, textarea:focus{
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* remove browser weird inner glow on some inputs */
+input, select, textarea{
+  -webkit-appearance: none;
+  appearance: none;
+}
 
 </style>
 </head>
