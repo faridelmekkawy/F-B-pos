@@ -763,7 +763,7 @@
       }
     }
 
-    function recalc(){
+    function recalc()
       const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
       const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
       const discount = subtotal * (discountPct/100);
@@ -1173,7 +1173,7 @@
       openDrawer("checkoutDrawer", true);
     }
 
-    function renderCheckoutSummary(){
+    function renderCheckoutSummary()
       const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
       const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
       const discount = subtotal * (discountPct/100);
@@ -1183,21 +1183,20 @@
       const tax = Math.max(0, (subtotal - discount + service) * (taxRate/100));
       const total = Math.max(0, subtotal - discount + service + tax);
 
-      $("coMeta").textContent = `${CART.reduce((s,l)=>s+Number(l.qty||0),0)} items`;
       $("coSubtotal").textContent = money(subtotal);
       $("coDiscount").textContent = money(discount);
       $("coService").textContent = money(service);
       $("coTax").textContent = money(tax);
       $("coTotal").textContent = money(total);
 
-      const lines = $("coLines");
-      lines.innerHTML = "";
+      $("coLines").innerHTML = "";
       for(const l of CART){
         const row = document.createElement("div");
         row.className = "totrow";
-        row.innerHTML = `<span>${escapeHtml(l.qty)}× ${escapeHtml(l.name)}${l.note?` <span class="hint">(${escapeHtml(l.note)})</span>`:""}</span><strong>${money(l.price*l.qty)}</strong>`;
-        lines.appendChild(row);
+        row.innerHTML = `<span>${l.qty}× ${escapeHtml(l.name)}${l.note?` <span class="hint">(${escapeHtml(l.note)})</span>`:""}</span><strong>${money(l.price*l.qty)}</strong>`;
+        $("coLines").appendChild(row);
       }
+    }
       $("coHint").textContent = "";
     }
 
