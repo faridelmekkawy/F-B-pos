@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-
+<head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Luma — Vendor Dashboard</title>
@@ -322,19 +322,26 @@ body{background:var(--bg)!important;}
 .footer{margin:24px 0 8px;color:var(--muted);text-align:center;font-weight:600;}
 
 </style>
-
+</head>
 
 <body>
-id="auth-view" class="auth-wrapper">
+<div id="authCard" class="auth-wrapper">
     <div class="auth-header">
       <div class="auth-logo">B</div>
       <div>
         <div class="auth-title">Luma Store OS — Brand Portal</div>
         <div id="auth-subtitle" class="auth-subtitle">Sign in or create your brand</div>
+        <div id="authPill" class="auth-subtitle" style="margin-top:6px;">Not signed in</div>
       </div>
     </div>
 
     <div id="auth-alert-container"></div>
+
+    <div class="field">
+      <div class="field-label">Brand ID</div>
+      <input id="brandId" class="field-input" placeholder="e.g. oudies" />
+      <div class="field-hint">This becomes your Firestore path: <code>brands/{brandId}</code></div>
+    </div>
 
     <div class="auth-tabs">
       <button type="button" id="tab-login" class="auth-tab active">Sign in</button>
@@ -384,15 +391,17 @@ id="auth-view" class="auth-wrapper">
     </div>
   </div>
 
-  
-id="app-view" class="app-shell">
+  <div id="app-view" class="app-shell">
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <div id="sidebar-brand-logo" class="sidebar-logo">B</div>
+        <div id="sidebar-brand-logo" class="sidebar-logo">
+          <img id="dashLogoImg" alt="Logo" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:999px"/>
+          <span id="dashLogoFallback">B</span>
+        </div>
         <div id="sidebar-brand-name" class="sidebar-brand-name">Brand</div>
       </div>
-      <nav class="sidebar-nav">
+      <nav id="sidebarNav" class="sidebar-nav">
         <button class="nav-item active" data-page="page-dashboard">Dashboard</button>
         <button class="nav-item" data-page="page-products">Products</button>
         <button class="nav-item" data-page="page-branches">Branches</button>
@@ -401,14 +410,14 @@ id="app-view" class="app-shell">
         <button class="nav-item" data-page="page-orders">Orders</button>
         <button class="nav-item" data-page="page-settings">Settings</button>
       </nav>
-      <button id="btn-logout" class="nav-item logout">Logout</button>
+      <button id="btnSignOut" class="nav-item logout">Logout</button>
     </aside>
 
     <!-- MAIN -->
     <div style="flex:1;display:flex;flex-direction:column;">
       <header class="topbar">
         <div>
-          <div id="topbar-brand-title" class="topbar-title">Brand Dashboard</div>
+          <div id="brandTitle" class="topbar-title">Brand Dashboard</div>
           <div class="topbar-sub">Control center for your brand</div>
         </div>
         <div class="topbar-branch-filter">
@@ -800,6 +809,7 @@ id="app-view" class="app-shell">
           <button class="btn" id="btnReportFinance">Finance CSV</button>
           <button class="btn" id="btnReportOps">Operations Print</button>
           <button class="btn primary" id="btnReportExec">Executive Print</button>
+          <button class="btn" id="btnPrint">Print / Save PDF</button>
         </div>
       </div>
       <div class="bd">
@@ -967,8 +977,8 @@ id="app-view" class="app-shell">
   brandId:["create-brandId","brand-key"],
   brandName:["brand-name","create-brandName"],
   authMsg:["auth-alert-container","auth-error"],
-  btnSignin:["btn-login"],
-  btnSignup:["btn-create-brand"],
+  btnSignin:["login-btn","btn-login"],
+  btnSignup:["create-btn","btn-create-brand"],
 };
 const $ = (id)=>{
   const primary = document.getElementById(id);
@@ -1056,6 +1066,12 @@ const $ = (id)=>{
   let staffCache = [];
   let devicesCache = [];
   let selectedOrder = null;
+
+  // Charts (global)
+  let ordersChart = null;
+  let salesChart = null;
+  let prepByHourChart = null;
+
 
 
 
@@ -1521,12 +1537,8 @@ const $ = (id)=>{
     if(stuckCount>=10) { $("queueHealth").textContent="Needs attention"; $("queueHealth").className="badge b-bad"; }
     else if(stuckCount>0) { $("queueHealth").textContent="Watch"; $("queueHealth").className="badge b-warn"; }
     else { $("queueHealth").textContent="OK"; $("queueHealth").className="badge b-ok"; }
-
     // Charts
-let ordersChart=null;
-let salesChart=null;
-let prepByHourChart=null;
-: group by hour
+    // group by hour
     const hours = new Map(); // key: YYYY-MM-DD HH
     orders.forEach(o=>{
       const t = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
