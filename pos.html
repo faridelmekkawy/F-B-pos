@@ -763,27 +763,34 @@
       }
     }
 
-    function recalc()
-      const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
-      const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
-      const discount = subtotal * (discountPct/100);
-      const taxRate = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
-      const serviceRate = Math.max(0, Number(($("service").value||"0").replace(",",".")) || 0);
-      const service = Math.max(0, (subtotal - discount) * (serviceRate/100));
-      const tax = Math.max(0, (subtotal - discount + service) * (taxRate/100));
-      const total = Math.max(0, subtotal - discount + service + tax);
+function recalc(){
+  const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
 
-      $("tSubtotal").textContent = money(subtotal);
-      $("tDiscount").textContent = money(discount);
-      $("tService").textContent = money(service);
-      $("tTax").textContent = money(tax);
-      $("tTotal").textContent = money(total);
+  const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
+  const discount = subtotal * (discountPct / 100);
 
-      $("cartMeta").textContent = `${CART.reduce((s,l)=>s+Number(l.qty||0),0)} items`;
-      const hasItems = CART.length>0;
-      $("cartEmpty").classList.toggle("hidden", hasItems);
-      $("btnPay").disabled = !hasItems || total <= 0;
-    }
+  const taxRate = Number($("tax").value || 0);
+  const serviceRate = Number($("service").value || 0);
+
+  const service = (subtotal - discount) * (serviceRate / 100);
+  const tax = (subtotal - discount + service) * (taxRate / 100);
+
+  const total = Math.max(0, subtotal - discount + service + tax);
+
+  $("tSubtotal").textContent = money(subtotal);
+  $("tDiscount").textContent = money(discount);
+  $("tService").textContent = money(service);
+  $("tTax").textContent = money(tax);
+  $("tTotal").textContent = money(total);
+
+  $("cartMeta").textContent =
+    CART.reduce((s,l)=>s + Number(l.qty||0),0) + " items";
+
+  const hasItems = CART.length > 0;
+  $("cartEmpty").classList.toggle("hidden", hasItems);
+  $("btnPay").disabled = !hasItems || total <= 0;
+}
+
 
     function renderCart(){
       const root = $("cart");
