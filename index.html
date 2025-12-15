@@ -119,6 +119,140 @@
     .btn-danger:hover{background:#b91c1c;}
 
     .auth-footer{text-align:center;margin-top:8px;font-size:10px;color:var(--muted);}
+/* =========================================================
+   VENDOR DASHBOARD UI FIX PACK (Brand-style)
+   Paste this block at the END of <style> before </style>
+   ========================================================= */
+
+/* utility */
+.hidden{display:none!important;}
+.muted{color:var(--muted)!important;}
+.hr{height:1px;background:var(--border);margin:12px 0;}
+.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.mini{font-size:11px;color:var(--muted);}
+
+/* sections / headers */
+.hd{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.hd h2{font-size:16px;font-weight:800;margin:0;}
+.bd{margin-top:6px;}
+
+/* badges */
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  border:1px solid var(--border);
+  background:var(--panel-soft);
+  color:var(--ink);
+}
+.badge.b-ok{background:#dcfce7;border-color:#bbf7d0;color:#166534;}
+.badge.b-warn{background:#fef9c3;border-color:#fde68a;color:#854d0e;}
+.badge.b-bad{background:#fee2e2;border-color:#fecaca;color:#991b1b;}
+
+/* notices */
+.notice{
+  background:var(--panel-soft);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:12px;
+  color:var(--ink);
+}
+.notice.dangerText{background:#fef2f2;border-color:#fecaca;color:#991b1b;}
+.dangerText{color:#991b1b;font-weight:700;}
+
+/* layout rows / grids */
+.row{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+  flex-wrap:wrap;
+}
+.row .field{flex:1;min-width:180px;}
+
+.split{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+@media(max-width:1000px){
+  .split{grid-template-columns:1fr;}
+}
+
+/* KPI grid + cards */
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+.kpi{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+.kpi .t{font-size:12px;color:var(--muted);font-weight:600;}
+.kpi .v{font-size:22px;font-weight:800;margin-top:4px;line-height:1.1;}
+.kpi .s{font-size:11px;color:var(--muted);margin-top:6px;}
+
+/* buttons – match your tokens */
+.btn{
+  border:none;
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  background:var(--panel-soft);
+  border:1px solid var(--border);
+}
+.btn:hover{filter:brightness(.98);}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
+.btn.primary:hover{background:var(--accent-strong);}
+.btn.ghost{background:transparent;border-color:var(--accent-soft);color:var(--accent-strong);}
+.btn.ghost:hover{background:var(--accent-soft);}
+.btn.danger,.btn.btn-danger{background:#ef4444;border-color:transparent;color:#fff;}
+.btn.danger:hover,.btn.btn-danger:hover{background:#b91c1c;}
+
+/* inputs */
+select,input[type="date"],input[type="text"],input[type="number"],input[type="email"],input[type="password"]{
+  padding:7px 10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  font-size:12px;
+}
+select:focus,input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px var(--accent-soft);
+}
+
+/* tables inside cards */
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead{background:var(--panel-soft);}
+th,td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;}
+th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;}
+tbody tr:hover{background:#f9fafb;}
+
+/* make charts containers breathe */
+canvas{max-width:100%;}
 
     /* APP LAYOUT */
     .app-shell{
@@ -931,143 +1065,7 @@ body{background:var(--bg)!important;}
 <div class="footer">Powered by Luma</div>
 
 <!-- Chart.js (required for charts) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js">
-  /* =========================================================
-   VENDOR DASHBOARD UI FIX PACK (Brand-style)
-   Paste this block at the END of <style> before </style>
-   ========================================================= */
-
-/* utility */
-.hidden{display:none!important;}
-.muted{color:var(--muted)!important;}
-.hr{height:1px;background:var(--border);margin:12px 0;}
-.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
-.mini{font-size:11px;color:var(--muted);}
-
-/* sections / headers */
-.hd{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:10px;
-}
-.hd h2{font-size:16px;font-weight:800;margin:0;}
-.bd{margin-top:6px;}
-
-/* badges */
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:700;
-  border:1px solid var(--border);
-  background:var(--panel-soft);
-  color:var(--ink);
-}
-.badge.b-ok{background:#dcfce7;border-color:#bbf7d0;color:#166534;}
-.badge.b-warn{background:#fef9c3;border-color:#fde68a;color:#854d0e;}
-.badge.b-bad{background:#fee2e2;border-color:#fecaca;color:#991b1b;}
-
-/* notices */
-.notice{
-  background:var(--panel-soft);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:10px 12px;
-  font-size:12px;
-  color:var(--ink);
-}
-.notice.dangerText{background:#fef2f2;border-color:#fecaca;color:#991b1b;}
-.dangerText{color:#991b1b;font-weight:700;}
-
-/* layout rows / grids */
-.row{
-  display:flex;
-  gap:10px;
-  align-items:flex-end;
-  flex-wrap:wrap;
-}
-.row .field{flex:1;min-width:180px;}
-
-.split{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-@media(max-width:1000px){
-  .split{grid-template-columns:1fr;}
-}
-
-/* KPI grid + cards */
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px;
-}
-.kpi{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:16px;
-  box-shadow:var(--shadow);
-}
-.kpi .t{font-size:12px;color:var(--muted);font-weight:600;}
-.kpi .v{font-size:22px;font-weight:800;margin-top:4px;line-height:1.1;}
-.kpi .s{font-size:11px;color:var(--muted);margin-top:6px;}
-
-/* buttons – match your tokens */
-.btn{
-  border:none;
-  border-radius:999px;
-  padding:8px 12px;
-  font-size:12px;
-  font-weight:800;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  background:var(--panel-soft);
-  border:1px solid var(--border);
-}
-.btn:hover{filter:brightness(.98);}
-.btn.primary{background:var(--accent);border-color:transparent;color:#fff;}
-.btn.primary:hover{background:var(--accent-strong);}
-.btn.ghost{background:transparent;border-color:var(--accent-soft);color:var(--accent-strong);}
-.btn.ghost:hover{background:var(--accent-soft);}
-.btn.danger,.btn.btn-danger{background:#ef4444;border-color:transparent;color:#fff;}
-.btn.danger:hover,.btn.btn-danger:hover{background:#b91c1c;}
-
-/* inputs */
-select,input[type="date"],input[type="text"],input[type="number"],input[type="email"],input[type="password"]{
-  padding:7px 10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:#fff;
-  font-size:12px;
-}
-select:focus,input:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 2px var(--accent-soft);
-}
-
-/* tables inside cards */
-table{width:100%;border-collapse:collapse;font-size:12px;}
-thead{background:var(--panel-soft);}
-th,td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;}
-th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;}
-tbody tr:hover{background:#f9fafb;}
-
-/* make charts containers breathe */
-canvas{max-width:100%;}
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script type="module">
 
