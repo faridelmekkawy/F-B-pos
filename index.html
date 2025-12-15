@@ -1,0 +1,2240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Luma Vendor Dashboard — Food POS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#0f1730;
+      --panel2:#111c3a;
+      --card:#111c3a;
+      --ink:#eaf0ff;
+      --muted:#a9b6d6;
+      --border:rgba(255,255,255,.10);
+      --accent:#6aa6ff;
+      --accent2:#7c5cff;
+      --ok:#22c55e;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --radius:18px;
+      --shadow:0 18px 55px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(106,166,255,.25), transparent 60%),
+                  radial-gradient(900px 700px at 85% 10%, rgba(124,92,255,.22), transparent 55%),
+                  linear-gradient(180deg, var(--bg), #070b16 70%);
+      color:var(--ink);
+    }
+    a{color:inherit}
+    .wrap{max-width:1280px;margin:0 auto;padding:18px 16px 90px}
+    header{
+      position:sticky;top:0;z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(7,11,22,.65);
+      border-bottom:1px solid var(--border);
+    }
+    .head{
+      max-width:1280px;margin:0 auto;padding:14px 16px;
+      display:flex;align-items:center;gap:14px;justify-content:space-between;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;min-width:240px;
+    }
+    .logo{
+      width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.06);
+      display:grid;place-items:center;overflow:hidden;border:1px solid var(--border);
+    }
+    .logo img{width:100%;height:100%;object-fit:cover;display:none}
+    .brand h1{font-size:14px;margin:0;line-height:1.1}
+    .brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+    .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border:1px solid var(--border);
+      background:rgba(255,255,255,.05);
+      border-radius:999px;font-size:12px;color:var(--muted);
+    }
+    .btn{
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      color:var(--ink);
+      padding:10px 12px;border-radius:12px;
+      font-weight:600;font-size:12px;cursor:pointer;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{border-color:rgba(106,166,255,.35);background:linear-gradient(180deg, rgba(106,166,255,.22), rgba(124,92,255,.12))}
+    .btn.danger{border-color:rgba(251,113,133,.35);background:linear-gradient(180deg, rgba(251,113,133,.20), rgba(255,255,255,.03))}
+    .btn.ghost{background:transparent}
+    .grid{display:grid;gap:14px}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .card .hd h2{margin:0;font-size:13px}
+    .card .bd{padding:14px}
+    .tabs{
+      display:flex;gap:8px;flex-wrap:wrap;
+      margin:18px 0 0;
+    }
+    .tab{
+      padding:10px 12px;border:1px solid var(--border);
+      border-radius:999px;font-weight:700;font-size:12px;
+      background:rgba(255,255,255,.04);
+      cursor:pointer;color:var(--muted);
+    }
+    .tab.active{
+      color:var(--ink);
+      border-color:rgba(106,166,255,.4);
+      background:linear-gradient(180deg, rgba(106,166,255,.25), rgba(124,92,255,.10));
+    }
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row > *{flex:1 1 220px}
+    .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    @media (max-width:980px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .kpi{
+      padding:14px;border-radius:16px;border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+    }
+    .kpi .t{color:var(--muted);font-size:12px;font-weight:600}
+    .kpi .v{font-size:22px;font-weight:800;margin-top:6px}
+    .kpi .s{margin-top:6px;color:var(--muted);font-size:12px}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      font-size:12px;font-weight:800;border:1px solid var(--border);
+      background:rgba(255,255,255,.04);
+    }
+    .b-ok{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.12)}
+    .b-warn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.12)}
+    .b-bad{border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.12)}
+    .field{display:flex;flex-direction:column;gap:6px}
+    label{font-size:12px;color:var(--muted);font-weight:700}
+    input,select,textarea{
+      padding:11px 12px;border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.25);
+      color:var(--ink);
+      outline:none;
+      font-family:inherit;
+    }
+    textarea{min-height:90px;resize:vertical}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    th,td{padding:10px 10px;border-bottom:1px solid var(--border);text-align:left;font-size:12px}
+    th{color:var(--muted);font-weight:800}
+    tr:hover td{background:rgba(255,255,255,.03)}
+    .muted{color:var(--muted)}
+    .split{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    @media (max-width:1100px){.split{grid-template-columns:1fr}}
+    .footer{
+      position:fixed;left:0;right:0;bottom:0;
+      padding:12px 16px;
+      background:rgba(7,11,22,.75);
+      border-top:1px solid var(--border);
+      backdrop-filter: blur(10px);
+      color:var(--muted);
+      display:flex;justify-content:center;
+      font-weight:700;
+    }
+    .hidden{display:none !important}
+    .notice{
+      padding:10px 12px;border:1px solid var(--border);
+      border-radius:14px;background:rgba(255,255,255,.04);
+      color:var(--muted);font-size:12px
+    }
+    .dangerText{color:#ffb4c0}
+    .okText{color:#a7f3d0}
+    .mini{font-size:11px;color:var(--muted)}
+    .right{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+    .hr{height:1px;background:var(--border);margin:14px 0}
+    .pillInput{
+      display:flex;gap:8px;align-items:center
+    }
+    .pillInput input{flex:1}
+    .fileRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+<header>
+  <div class="head">
+    <div class="brand">
+      <div class="logo" id="dashLogoBox" title="Dashboard logo">
+        <img id="dashLogoImg" alt="Dashboard Logo"/>
+        <span id="dashLogoFallback" class="muted" style="font-weight:900">L</span>
+      </div>
+      <div>
+        <h1 id="brandTitle">Vendor Dashboard</h1>
+        <p id="brandSubtitle">Control tower • realtime ops • exports</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="pill" id="authPill">Not signed in</span>
+      <button class="btn ghost" id="btnPrint">Print / Save PDF</button>
+      <button class="btn" id="btnSignOut" disabled>Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- AUTH -->
+  <div class="card" id="authCard">
+    <div class="hd">
+      <h2>Vendor Owner Login</h2>
+      <span class="badge b-warn">Vendor-first • No DB touch</span>
+    </div>
+    <div class="bd">
+      <div class="split">
+        <div>
+          <div class="notice">
+            This dashboard <b>creates everything automatically</b> (brand, staff, devices, products). You do not need to touch Firestore.
+            <div class="mini" style="margin-top:6px">Tip: Use one vendor per Firebase project OR one vendor per brandId within the same project.</div>
+          </div>
+          <div class="hr"></div>
+          <div class="row">
+            <div class="field">
+              <label>Email</label>
+              <input id="email" type="email" placeholder="owner@vendor.com">
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input id="pass" type="password" placeholder="••••••••">
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <div class="field">
+              <label>Brand ID (vendor key)</label>
+              <input id="brandId" placeholder="e.g. oudies or vendor_001">
+              <div class="mini">This becomes <code>brands/{brandId}</code>. Keep it simple (letters/numbers/_/-).</div>
+            </div>
+            <div class="field">
+              <label>Brand Name</label>
+              <input id="brandName" placeholder="e.g. Oudies">
+            </div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn primary" id="btnSignup">Sign up (create vendor)</button>
+            <button class="btn" id="btnSignin">Sign in</button>
+          </div>
+          <div class="mini" id="authMsg" style="margin-top:10px"></div>
+        </div>
+        <div>
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Firebase setup</h2></div>
+            <div class="bd">
+              <div class="notice">
+                Paste your Firebase config in <b>one place</b> (top of this file). Then deploy as static hosting.
+                <div class="mini" style="margin-top:8px">
+                  Needs: Auth (Email/Password), Firestore, Storage enabled.
+                </div>
+              </div>
+              <div class="hr"></div>
+              <div class="notice dangerText">
+                If you use Firestore rules that block writes, the dashboard won’t be able to auto-create docs. Make sure owner is allowed.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <div class="tabs" id="tabs"></div>
+
+    <!-- OVERVIEW -->
+    <section class="card" id="page-overview">
+      <div class="hd">
+        <h2>Overview (Live)</h2>
+        <div class="right">
+          <span class="badge" id="periodBadge">Period: Today</span>
+          <select id="periodSel">
+            <option value="today" selected>Today</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="custom">Custom range</option>
+          </select>
+          <input id="fromDate" type="date" class="hidden">
+          <input id="toDate" type="date" class="hidden">
+          <button class="btn" id="btnRefresh">Refresh</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="kpis" id="kpiGrid"></div>
+
+        <div class="split" style="margin-top:14px">
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Trends</h2><span class="badge" id="peakChip">Peak: —</span></div>
+            <div class="bd">
+              <canvas id="ordersChart" height="120"></canvas>
+              <div class="hr"></div>
+              <canvas id="salesChart" height="120"></canvas>
+            </div>
+          </div>
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Queue Health</h2><span class="badge b-ok" id="queueHealth">OK</span></div>
+            <div class="bd">
+              <div class="row">
+                <div class="kpi">
+                  <div class="t">Preparing</div>
+                  <div class="v" id="prepCount">0</div>
+                  <div class="s" id="prepOldest">Oldest: —</div>
+                </div>
+                <div class="kpi">
+                  <div class="t">Completed (period)</div>
+                  <div class="v" id="compCount">0</div>
+                  <div class="s" id="avgPrep">Avg prep: —</div>
+                </div>
+              </div>
+              <div class="hr"></div>
+              <div class="notice" id="alertsBox">No alerts.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section class="card hidden" id="page-orders">
+      <div class="hd">
+        <h2>Orders Center</h2>
+        <div class="right">
+          <select id="fStatus">
+            <option value="all">All statuses</option>
+            <option value="preparing">Preparing</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <select id="fPay">
+            <option value="all">All payments</option>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="wallet">Wallet</option>
+          </select>
+          <select id="fRefund">
+            <option value="all">All</option>
+            <option value="refunded">Refunded only</option>
+          </select>
+          <button class="btn" id="btnExportCsv">Export CSV</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="notice">Click an order to open details drawer. Actions include Cancel, Refund, Mark Completed (override), and Receipt QR preview.</div>
+        <div style="overflow:auto;margin-top:10px">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>Order #</th><th>Time</th><th>Status</th><th>Total</th><th>Payment</th><th>Customer</th><th>Prep time</th><th>Flags</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-top:14px;box-shadow:none" id="orderDrawer">
+          <div class="hd">
+            <h2 id="odTitle">Order details</h2>
+            <div class="right">
+              <button class="btn" id="btnOdReceipt">Open receipt</button>
+              <button class="btn" id="btnOdComplete">Mark completed</button>
+              <button class="btn danger" id="btnOdCancel">Cancel</button>
+            </div>
+          </div>
+          <div class="bd">
+            <div class="split">
+              <div>
+                <div id="odItems"></div>
+                <div class="hr"></div>
+                <div class="row">
+                  <div class="field">
+                    <label>Refund amount (leave empty = full)</label>
+                    <input id="refundAmt" type="number" step="0.01" placeholder="e.g. 50">
+                  </div>
+                  <div class="field">
+                    <label>Refund reason (optional)</label>
+                    <input id="refundReason" placeholder="e.g. cancelled by customer">
+                  </div>
+                </div>
+                <div style="margin-top:10px" class="right">
+                  <button class="btn danger" id="btnOdRefund">Refund</button>
+                  <button class="btn ghost" id="btnOdNote">Add internal note</button>
+                </div>
+              </div>
+              <div>
+                <div class="notice" id="odTimeline">Select an order…</div>
+                <div class="hr"></div>
+                <div class="notice">
+                  <b>QR preview</b>
+                  <div class="mini">Receipt URL is not stored in dashboard. QR uses <code>receipt.html?brandId=...&orderId=...</code></div>
+                  <div id="odQr" style="margin-top:10px"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- KITCHEN & SLA -->
+    <section class="card hidden" id="page-kitchen">
+      <div class="hd">
+        <h2>Kitchen & SLA</h2>
+        <div class="right">
+          <span class="badge" id="slaAvgChip">Avg prep: —</span>
+          <div class="pillInput">
+            <span class="mini">Stuck &gt;</span>
+            <input id="slaStuckMin" type="number" min="1" value="20" style="width:90px" />
+            <span class="mini">min</span>
+          </div>
+          <span class="badge b-warn" id="slaStuckChip">Stuck: 0</span>
+          <button class="btn" id="btnSlaRefresh">Refresh</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="split">
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Stuck / Preparing Queue</h2></div>
+            <div class="bd">
+              <div class="notice">Orders in <b>preparing</b> older than the stuck threshold appear here. You can <b>Mark completed</b> directly.</div>
+              <div style="overflow:auto;margin-top:10px">
+                <table id="slaTable">
+                  <thead>
+                    <tr>
+                      <th>Order #</th><th>Created</th><th>Age</th><th>Total</th><th>Customer</th><th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Prep Time Analytics</h2></div>
+            <div class="bd">
+              <canvas id="prepByHourChart" height="140"></canvas>
+              <div class="hr"></div>
+              <div style="overflow:auto">
+                <table id="prepByCatTable">
+                  <thead><tr><th>Category</th><th>Avg prep</th><th>#Completed</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="mini" style="margin-top:8px">Prep time = completedAt − createdAt (completed orders in selected period).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOMERS -->
+    <section class="card hidden" id="page-customers">
+      <div class="hd">
+        <h2>Customers</h2>
+        <div class="right">
+          <button class="btn" id="btnCustomersExport">Export CSV</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="notice">
+          Customers are <b>auto-created from orders</b> (name/phone if present, else Walk-in). Spend and order counts are calculated from live orders.
+        </div>
+        <div class="hr"></div>
+        <div class="split">
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Top Customers</h2></div>
+            <div class="bd" style="overflow:auto">
+              <table id="topCustomersTable">
+                <thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Spend</th><th>Last order</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>All Customers</h2></div>
+            <div class="bd" style="overflow:auto">
+              <table id="customersTable">
+                <thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Spend</th><th>Last order</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFUNDS / DISPUTES -->
+    <section class="card hidden" id="page-refunds">
+      <div class="hd">
+        <h2>Refunds / Disputes</h2>
+        <div class="right">
+          <span class="badge" id="refundsTotalChip">Total refunded: —</span>
+          <button class="btn" id="btnRefundsExport">Export Refunds CSV</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="notice">
+          Refunds are recorded inside orders (<code>refund.at</code>, <code>refund.amount</code>, <code>refund.reason</code>). This page aggregates them for the selected period.
+        </div>
+        <div class="hr"></div>
+        <div style="overflow:auto">
+          <table id="refundsTable">
+            <thead><tr><th>Order #</th><th>Refund time</th><th>Amount</th><th>Reason</th><th>Cashier</th><th>Open order</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAFF -->
+    <section class="card hidden" id="page-staff">
+      <div class="hd">
+        <h2>Staff & Cashiers</h2>
+        <div class="right">
+          <button class="btn primary" id="btnAddStaff">Add staff</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="field">
+            <label>Username</label>
+            <input id="staffUser" placeholder="e.g. cashier1">
+          </div>
+          <div class="field">
+            <label>PIN</label>
+            <input id="staffPin" placeholder="4-6 digits">
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select id="staffRole">
+              <option value="cashier">Cashier (POS)</option>
+              <option value="kitchen">Kitchen</option>
+            </select>
+          </div>
+        </div>
+        <div class="right" style="margin-top:10px">
+          <button class="btn primary" id="btnCreateStaff">Create</button>
+          <button class="btn danger" id="btnClearStaff">Clear</button>
+        </div>
+        <div class="hr"></div>
+        <div style="overflow:auto">
+          <table id="staffTable">
+            <thead><tr><th>Username</th><th>Role</th><th>Active</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="mini" id="staffMsg" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+    <!-- DEVICES -->
+    <section class="card hidden" id="page-devices">
+      <div class="hd">
+        <h2>Devices & Screens</h2>
+        <div class="right">
+          <button class="btn primary" id="btnAddDevice">Add device</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="field"><label>Device name</label><input id="devName" placeholder="Kitchen-1"></div>
+          <div class="field">
+            <label>Role</label>
+            <select id="devRole">
+              <option value="pos">POS</option>
+              <option value="kitchen">Kitchen</option>
+              <option value="customer">Customer Display</option>
+            </select>
+          </div>
+          <div class="field"><label>App version (optional)</label><input id="devVer" placeholder="1.0.0"></div>
+        </div>
+        <div class="right" style="margin-top:10px">
+          <button class="btn primary" id="btnCreateDevice">Create</button>
+          <button class="btn danger" id="btnClearDevice">Clear</button>
+        </div>
+        <div class="hr"></div>
+        <div style="overflow:auto">
+          <table id="devicesTable">
+            <thead><tr><th>Name</th><th>Role</th><th>Locked</th><th>Last Online</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section class="card hidden" id="page-products">
+      <div class="hd">
+        <h2>Products & Menu</h2>
+        <div class="right">
+          <button class="btn" id="btnDownloadTemplate">Download Excel template (CSV)</button>
+          <label class="btn" style="cursor:pointer">
+            Import CSV/XLSX
+            <input id="importFile" type="file" accept=".csv,.xlsx" style="display:none">
+          </label>
+          <button class="btn primary" id="btnAddProduct">Add product</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="field"><label>Name</label><input id="pName" placeholder="Burger"></div>
+          <div class="field"><label>Category</label><input id="pCat" placeholder="Sandwiches"></div>
+          <div class="field"><label>Price</label><input id="pPrice" type="number" step="0.01" placeholder="0.00"></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="field" style="flex:2"><label>Description (optional)</label><input id="pDesc" placeholder="Short description"></div>
+          <div class="field">
+            <label>Image</label>
+            <input id="pImg" type="file" accept="image/*">
+          </div>
+        </div>
+        <div class="right" style="margin-top:10px">
+          <button class="btn primary" id="btnCreateProduct">Create</button>
+          <button class="btn danger" id="btnClearProduct">Clear</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="notice">
+          Every product you add must have a <b>Delete</b> action (per your rule). Delete removes the Firestore doc (and optionally the image reference).
+        </div>
+
+        <div style="overflow:auto;margin-top:10px">
+          <table id="productsTable">
+            <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Image</th><th>Updated</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="mini" id="prodMsg" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="card hidden" id="page-reports">
+      <div class="hd">
+        <h2>Reports & Export Center</h2>
+        <div class="right">
+          <button class="btn" id="btnReportFinance">Finance CSV</button>
+          <button class="btn" id="btnReportOps">Operations Print</button>
+          <button class="btn primary" id="btnReportExec">Executive Print</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="notice">
+          Reports are generated from your live Firestore data. Use <b>Print / Save PDF</b> to export charts + tables as a snapshot.
+        </div>
+        <div class="hr"></div>
+        <div class="split">
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Executive Summary</h2></div>
+            <div class="bd">
+              <div class="kpis" id="repKpis"></div>
+            </div>
+          </div>
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><h2>Issues / Alerts</h2></div>
+            <div class="bd"><div class="notice" id="repAlerts">No alerts.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="card hidden" id="page-settings">
+      <div class="hd">
+        <h2>Settings</h2>
+        <div class="right">
+          <button class="btn primary" id="btnSaveLinks">Save system links</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="split">
+          <div>
+            <div class="card" style="box-shadow:none">
+              <div class="hd"><h2>Branding</h2></div>
+              <div class="bd">
+                <div class="fileRow">
+                  <div class="field" style="flex:1">
+                    <label>Brand logo (for customer/receipt)</label>
+                    <input id="brandLogoFile" type="file" accept="image/*">
+                  </div>
+                  <button class="btn" id="btnUploadBrandLogo">Upload</button>
+                </div>
+                <div class="hr"></div>
+                <div class="fileRow">
+                  <div class="field" style="flex:1">
+                    <label>Dashboard logo (header)</label>
+                    <input id="dashLogoFile" type="file" accept="image/*">
+                  </div>
+                  <button class="btn" id="btnUploadDashLogo">Upload</button>
+                </div>
+                <div class="mini" id="brandMsg" style="margin-top:8px"></div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:14px;box-shadow:none">
+              <div class="hd"><h2>System Links</h2></div>
+              <div class="bd">
+                <div class="notice">Paste your deployed URLs here. (No receipt URL field per requirement.)</div>
+                <div class="hr"></div>
+                <div class="field"><label>POS URL</label><input id="linkPos" placeholder="https://.../pos.html"></div>
+                <div class="field" style="margin-top:10px"><label>Kitchen URL</label><input id="linkKitchen" placeholder="https://.../kitchen.html"></div>
+                <div class="field" style="margin-top:10px"><label>Customer Display URL</label><input id="linkCustomer" placeholder="https://.../customer.html"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="box-shadow:none">
+              <div class="hd"><h2>Danger Zone</h2></div>
+              <div class="bd">
+                <div class="notice dangerText">
+                  Delete actions are available per your rule. Use carefully.
+                </div>
+                <div class="hr"></div>
+                <button class="btn danger" id="btnDeleteAllOrders">Cancel ALL orders (vendor)</button>
+                <div class="mini" style="margin-top:8px">This only deletes order documents, not Storage files.</div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:14px;box-shadow:none">
+              <div class="hd"><h2>Runtime Health</h2></div>
+              <div class="bd">
+                <div class="notice">
+                  The dashboard auto-creates:
+                  <ul class="mini">
+                    <li><code>brands/{brandId}</code></li>
+                    <li><code>brands/{brandId}/runtime/customerDisplay</code></li>
+                    <li><code>brands/{brandId}/settings/links</code></li>
+                  </ul>
+                </div>
+                <button class="btn" id="btnHeal">Heal / Create missing docs</button>
+                <div class="mini" id="healMsg" style="margin-top:8px"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="footer">Powered by Luma</div>
+
+<!-- Firebase (Modular v9+) -->
+<script type="module">
+  /**************************************************************
+   * 1) PASTE YOUR FIREBASE CONFIG HERE
+   **************************************************************/
+  const firebaseConfig = {
+    // apiKey: "",
+    // authDomain: "",
+    // projectId: "",
+    // storageBucket: "",
+    // messagingSenderId: "",
+    // appId: ""
+  };
+
+  /**************************************************************
+   * 2) Imports
+   **************************************************************/
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged,
+    signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    getFirestore,
+    doc, getDoc, setDoc, updateDoc, deleteDoc,
+    collection, addDoc, serverTimestamp,
+    query, where, orderBy, limit, getDocs, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import {
+    getStorage, ref as sRef, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+  /**************************************************************
+   * 3) App init
+   **************************************************************/
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  /**************************************************************
+   * 4) Helpers
+   **************************************************************/
+  const $ = (id)=>document.getElementById(id);
+  const fmtMoney = (n)=> (Number(n||0)).toFixed(2);
+  const now = ()=> new Date();
+  const toISODate = (d)=> d.toISOString().slice(0,10);
+  function safeId(s){
+    return String(s||"").trim().toLowerCase().replace(/[^a-z0-9_-]/g,"_").slice(0,64);
+  }
+  function msToHuman(ms){
+    if(!isFinite(ms) || ms<0) return "—";
+    const m = Math.floor(ms/60000);
+    if(m<1) return "< 1m";
+    if(m<60) return `${m}m`;
+    const h = Math.floor(m/60);
+    const rm = m%60;
+    return `${h}h ${rm}m`;
+  }
+  async function sha256Hex(str){
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
+  function toast(msg, ok=true){
+    const el = $("authMsg");
+    el.textContent = msg;
+    el.style.color = ok ? "#a7f3d0" : "#ffb4c0";
+  }
+  function setAuthPill(text){
+    $("authPill").textContent = text;
+  }
+
+  
+  function customerKeyFromOrder(o){
+    const phone = String(o?.customer?.phone||"").trim();
+    const name = String(o?.customer?.name||"").trim();
+    if(phone) return "p_"+safeId(phone);
+    if(name) return "n_"+safeId(name);
+    return "walkin";
+  }
+
+  async function upsertCustomerFromOrder(o){
+    try{
+      const key = customerKeyFromOrder(o);
+      const name = String(o?.customer?.name||"").trim() || (key==="walkin" ? "Walk-in" : null);
+      const phone = String(o?.customer?.phone||"").trim() || null;
+
+      const created = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const total = Number(o?.totals?.total||0);
+      // Only count non-cancelled orders toward spend
+      const isSale = o?.status !== "cancelled";
+
+      await setDoc(doc(db,"brands",BRAND_ID,"customers",key), {
+        key,
+        name,
+        phone,
+        lastOrderAt: created || null,
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+    }catch(e){
+      // Never crash on customer writes
+      console.warn("upsertCustomerFromOrder failed", e);
+    }
+  }
+
+/**************************************************************
+   * 5) State
+   **************************************************************/
+  let BRAND_ID = null;
+  let BRAND = null;
+  let unsubOrders = null;
+  let unsubStaff = null;
+  let unsubDevices = null;
+  let unsubProducts = null;
+
+  let ordersCache = [];
+  let productsCache = [];
+  let staffCache = [];
+  let devicesCache = [];
+  let selectedOrder = null;
+
+  // Charts
+  let ordersChart = null;
+  let salesChart = null;
+
+  /**************************************************************
+   * 6) Doc refs
+   **************************************************************/
+  const brandRef = ()=> doc(db, "brands", BRAND_ID);
+  const runtimeRef = ()=> doc(db, "brands", BRAND_ID, "runtime", "customerDisplay");
+  const linksRef = ()=> doc(db, "brands", BRAND_ID, "settings", "links");
+
+  const ordersCol = ()=> collection(db, "brands", BRAND_ID, "orders");
+  const productsCol = ()=> collection(db, "brands", BRAND_ID, "products");
+  const staffCol = ()=> collection(db, "brands", BRAND_ID, "staff");
+  const devicesCol = ()=> collection(db, "brands", BRAND_ID, "devices");
+
+  const customersCol = ()=> collection(db, "brands", BRAND_ID, "customers");
+
+
+  /**************************************************************
+   * 7) Auto-heal / create missing docs
+   **************************************************************/
+  async function heal(){
+    if(!BRAND_ID) return;
+    const b = await getDoc(brandRef());
+    if(!b.exists()){
+      await setDoc(brandRef(), {
+        name: BRAND?.name || $("brandName").value.trim() || "Vendor",
+        ownerUid: auth.currentUser?.uid || null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+    }
+    const r = await getDoc(runtimeRef());
+    if(!r.exists()){
+      await setDoc(runtimeRef(), { lastPaidOrderId:null, lastPaidAt:null, updatedAt:serverTimestamp() }, {merge:true});
+    }
+    const l = await getDoc(linksRef());
+    if(!l.exists()){
+      await setDoc(linksRef(), { posUrl:"", kitchenUrl:"", customerUrl:"", updatedAt:serverTimestamp() }, {merge:true});
+    }
+    $("healMsg").textContent = "Heal complete.";
+  }
+
+  /**************************************************************
+   * 8) Auth actions
+   **************************************************************/
+  $("btnSignup").onclick = async ()=>{
+    try{
+      const email = $("email").value.trim();
+      const pass = $("pass").value;
+      const id = safeId($("brandId").value);
+      const name = $("brandName").value.trim() || "Vendor";
+      if(!email || !pass) return toast("Enter email + password.", false);
+      if(!id) return toast("Enter Brand ID.", false);
+      BRAND_ID = id;
+
+      await createUserWithEmailAndPassword(auth, email, pass);
+      // Create brand doc immediately
+      await setDoc(brandRef(), {
+        name,
+        ownerUid: auth.currentUser.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+
+      await heal();
+      toast("Vendor created. Signed in.", true);
+    }catch(e){
+      console.error(e);
+      toast(e.message || "Signup failed.", false);
+    }
+  };
+
+  $("btnSignin").onclick = async ()=>{
+    try{
+      const email = $("email").value.trim();
+      const pass = $("pass").value;
+      const id = safeId($("brandId").value);
+      if(!email || !pass) return toast("Enter email + password.", false);
+      if(!id) return toast("Enter Brand ID.", false);
+      BRAND_ID = id;
+
+      await signInWithEmailAndPassword(auth, email, pass);
+      await heal();
+      toast("Signed in.", true);
+    }catch(e){
+      console.error(e);
+      toast(e.message || "Signin failed.", false);
+    }
+  };
+
+  $("btnSignOut").onclick = async ()=>{
+    await signOut(auth);
+  };
+
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){
+      $("authCard").classList.remove("hidden");
+      $("app").classList.add("hidden");
+      $("btnSignOut").disabled = true;
+      setAuthPill("Not signed in");
+      BRAND = null;
+      teardownRealtime();
+      return;
+    }
+
+    if(!BRAND_ID){
+      // User signed in but brandId not set in this session
+      $("authMsg").textContent = "Enter Brand ID then sign in.";
+      await signOut(auth);
+      return;
+    }
+
+    // Load brand
+    const b = await getDoc(brandRef());
+    if(!b.exists()){
+      // auto-create to honor "no DB touch"
+      await setDoc(brandRef(), {
+        name: $("brandName").value.trim() || "Vendor",
+        ownerUid: user.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+    }
+    const b2 = await getDoc(brandRef());
+    BRAND = { id: BRAND_ID, ...(b2.data()||{}) };
+
+    $("authCard").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("btnSignOut").disabled = false;
+
+    setAuthPill(`Signed in • ${BRAND_ID}`);
+    $("brandTitle").textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Vendor Dashboard";
+
+    await heal();
+    await loadSettingsBranding();
+    setupTabs();
+    startRealtime();
+  });
+
+  /**************************************************************
+   * 9) Tabs
+   **************************************************************/
+  const PAGES = [
+    ["overview","Overview"],
+    ["orders","Orders"],
+    ["kitchen","Kitchen & SLA"],
+    ["customers","Customers"],
+    ["refunds","Refunds / Disputes"],
+    ["products","Products"],
+    ["staff","Staff"],
+    ["devices","Devices"],
+    ["reports","Reports"],
+    ["settings","Settings"]
+  ];
+
+  function setupTabs(){
+    const el = $("tabs");
+    el.innerHTML = "";
+    PAGES.forEach(([key,label], idx)=>{
+      const b = document.createElement("button");
+      b.className = "tab" + (idx===0 ? " active" : "");
+      b.textContent = label;
+      b.onclick = ()=> showPage(key);
+      el.appendChild(b);
+    });
+    showPage("overview");
+  }
+
+  function showPage(key){
+    // tabs
+    [...$("tabs").children].forEach((t,i)=>{
+      t.classList.toggle("active", PAGES[i][0]===key);
+    });
+    // pages
+    PAGES.forEach(([k])=>{
+      $("page-"+k).classList.toggle("hidden", k!==key);
+    });
+    // Special: refresh some views
+    if(key==="reports") renderReportView();
+    if(key==="kitchen") renderKitchenSLA();
+    if(key==="customers") renderCustomers();
+    if(key==="refunds") renderRefunds();
+  }
+
+  /**************************************************************
+   * 10) Settings: branding + links
+   **************************************************************/
+  async function loadSettingsBranding(){
+    const b = await getDoc(brandRef());
+    const d = b.data()||{};
+    if(d.dashboardLogoUrl){
+      $("dashLogoImg").src = d.dashboardLogoUrl;
+      $("dashLogoImg").style.display = "block";
+      $("dashLogoFallback").style.display = "none";
+    }else{
+      $("dashLogoImg").style.display = "none";
+      $("dashLogoFallback").style.display = "block";
+    }
+
+    const l = await getDoc(linksRef());
+    if(l.exists()){
+      const v = l.data()||{};
+      $("linkPos").value = v.posUrl||"";
+      $("linkKitchen").value = v.kitchenUrl||"";
+      $("linkCustomer").value = v.customerUrl||"";
+    }
+  }
+
+  async function uploadImage(file, path){
+    const r = sRef(storage, path);
+    await uploadBytes(r, file);
+    return await getDownloadURL(r);
+  }
+
+  $("btnUploadBrandLogo").onclick = async ()=>{
+    const f = $("brandLogoFile").files?.[0];
+    if(!f) return $("brandMsg").textContent = "Pick a file first.";
+    $("brandMsg").textContent = "Uploading…";
+    try{
+      const url = await uploadImage(f, `brands/${BRAND_ID}/branding/brandLogo_${Date.now()}`);
+      await updateDoc(brandRef(), { logoUrl:url, updatedAt:serverTimestamp() });
+      $("brandMsg").textContent = "Brand logo updated.";
+    }catch(e){
+      console.error(e);
+      $("brandMsg").textContent = e.message || "Upload failed.";
+    }
+  };
+
+  $("btnUploadDashLogo").onclick = async ()=>{
+    const f = $("dashLogoFile").files?.[0];
+    if(!f) return $("brandMsg").textContent = "Pick a file first.";
+    $("brandMsg").textContent = "Uploading…";
+    try{
+      const url = await uploadImage(f, `brands/${BRAND_ID}/branding/dashboardLogo_${Date.now()}`);
+      await updateDoc(brandRef(), { dashboardLogoUrl:url, updatedAt:serverTimestamp() });
+      $("brandMsg").textContent = "Dashboard logo updated.";
+      await loadSettingsBranding();
+    }catch(e){
+      console.error(e);
+      $("brandMsg").textContent = e.message || "Upload failed.";
+    }
+  };
+
+  $("btnSaveLinks").onclick = async ()=>{
+    try{
+      await setDoc(linksRef(), {
+        posUrl: $("linkPos").value.trim(),
+        kitchenUrl: $("linkKitchen").value.trim(),
+        customerUrl: $("linkCustomer").value.trim(),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+      alert("Links saved.");
+    }catch(e){
+      alert(e.message || "Failed to save links.");
+    }
+  };
+
+  $("btnHeal").onclick = heal;
+
+  /**************************************************************
+   * 11) Realtime listeners
+   **************************************************************/
+  function teardownRealtime(){
+    if(unsubOrders) unsubOrders();
+    if(unsubProducts) unsubProducts();
+    if(unsubStaff) unsubStaff();
+    if(unsubDevices) unsubDevices();
+    unsubOrders = unsubProducts = unsubStaff = unsubDevices = null;
+    ordersCache = productsCache = staffCache = devicesCache = [];
+  }
+
+  function startRealtime(){
+    teardownRealtime();
+
+    // Orders: recent
+    const oq = query(ordersCol(), orderBy("timestamps.createdAt","desc"), limit(400));
+    unsubOrders = onSnapshot(oq, async (snap)=>{
+      // Upsert customers from changed orders (best-effort; never blocks UI)
+      const changes = snap.docChanges();
+      for(const ch of changes){
+        if(ch.type==="removed") continue;
+        const o = {id: ch.doc.id, ...ch.doc.data()};
+        await upsertCustomerFromOrder(o);
+      }
+
+      ordersCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderOverview();
+      renderOrdersTable();
+      renderKitchenSLA();
+      renderCustomers();
+      renderRefunds();
+      renderReportView();
+    });
+
+    // Products
+    const pq = query(productsCol(), orderBy("updatedAt","desc"), limit(1000));
+    unsubProducts = onSnapshot(pq, (snap)=>{
+      productsCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderProductsTable();
+    });
+
+    // Staff
+    const sq = query(staffCol(), orderBy("createdAt","desc"), limit(500));
+    unsubStaff = onSnapshot(sq, (snap)=>{
+      staffCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderStaffTable();
+    });
+
+    // Devices
+    const dq = query(devicesCol(), orderBy("updatedAt","desc"), limit(500));
+    unsubDevices = onSnapshot(dq, (snap)=>{
+      devicesCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderDevicesTable();
+    });
+  }
+
+  /**************************************************************
+   * 12) Period filtering
+   **************************************************************/
+  function getPeriodRange(){
+    const mode = $("periodSel").value;
+    const end = new Date();
+    let start = new Date(end);
+    if(mode==="today"){
+      start = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    }else if(mode==="7d"){
+      start.setDate(start.getDate()-6);
+      start = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    }else if(mode==="30d"){
+      start.setDate(start.getDate()-29);
+      start = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    }else{
+      const f = $("fromDate").value ? new Date($("fromDate").value+"T00:00:00") : new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      const t = $("toDate").value ? new Date($("toDate").value+"T23:59:59") : end;
+      start = f; end.setTime(t.getTime());
+      return {start, end, mode:"custom"};
+    }
+    return {start, end, mode};
+  }
+
+  $("periodSel").onchange = ()=>{
+    const isCustom = $("periodSel").value==="custom";
+    $("fromDate").classList.toggle("hidden", !isCustom);
+    $("toDate").classList.toggle("hidden", !isCustom);
+    renderOverview();
+  };
+  $("btnRefresh").onclick = renderOverview;
+
+  /**************************************************************
+   * 13) Overview rendering + charts + alerts
+   **************************************************************/
+  function inRangeOrder(o, start, end){
+    const ts = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+    if(!ts) return false;
+    return ts >= start && ts <= end;
+  }
+
+  function calcNetTotal(o){
+    const total = Number(o?.totals?.total||0);
+    const refundAmt = (o?.refund && o.refund.at) ? (o.refund.amount==null ? total : Number(o.refund.amount||0)) : 0;
+    return Math.max(0, total - refundAmt);
+  }
+
+  function renderOverview(){
+    if(!ordersCache) return;
+    const {start, end, mode} = getPeriodRange();
+    $("periodBadge").textContent = mode==="custom"
+      ? `Period: ${$("fromDate").value||"—"} → ${$("toDate").value||"—"}`
+      : `Period: ${$("periodSel").selectedOptions[0].textContent}`;
+
+    const orders = ordersCache.filter(o=> inRangeOrder(o,start,end));
+    const validSalesOrders = orders.filter(o=> o.status!=="cancelled");
+
+    const totalSales = validSalesOrders.reduce((a,o)=>a+Number(o?.totals?.total||0),0);
+    const ordersCount = validSalesOrders.length;
+    const aov = ordersCount ? totalSales/ordersCount : 0;
+
+    const refundsAmt = validSalesOrders.reduce((a,o)=>{
+      if(o?.refund?.at){
+        const total = Number(o?.totals?.total||0);
+        const r = (o.refund.amount==null) ? total : Number(o.refund.amount||0);
+        return a + r;
+      }
+      return a;
+    },0);
+
+    const netSales = validSalesOrders.reduce((a,o)=>a+calcNetTotal(o),0);
+
+    const preparingCount = orders.filter(o=>o.status==="preparing").length;
+    const completedCount = orders.filter(o=>o.status==="completed").length;
+    const cancelledCount = orders.filter(o=>o.status==="cancelled").length;
+
+    const paySplit = {cash:0, card:0, wallet:0};
+    validSalesOrders.forEach(o=>{
+      const m = (o?.payment?.method||"").toLowerCase();
+      if(paySplit[m]!=null) paySplit[m]+=Number(o?.totals?.total||0);
+    });
+
+    // KPI cards
+    const kpis = [
+      ["Total Sales", fmtMoney(totalSales), "Excluding cancelled"],
+      ["Orders", String(ordersCount), "Paid orders"],
+      ["AOV", fmtMoney(aov), "Average order value"],
+      ["Net Sales", fmtMoney(netSales), "After refunds"],
+      ["Refunds", fmtMoney(refundsAmt), "Period refunds"],
+      ["Open Orders", String(preparingCount), "Preparing"],
+      ["Cancelled", String(cancelledCount), "Period cancelled"],
+      ["Cash / Card / Wallet", `${fmtMoney(paySplit.cash)} / ${fmtMoney(paySplit.card)} / ${fmtMoney(paySplit.wallet)}`, "Payment split"]
+    ];
+    $("kpiGrid").innerHTML = kpis.map(([t,v,s])=>`
+      <div class="kpi">
+        <div class="t">${t}</div>
+        <div class="v">${v}</div>
+        <div class="s">${s}</div>
+      </div>
+    `).join("");
+
+    // Queue health: oldest preparing
+    const preparing = ordersCache.filter(o=>o.status==="preparing");
+    let oldestAge = null;
+    preparing.forEach(o=>{
+      const t = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      if(!t) return;
+      const age = Date.now() - t.getTime();
+      if(oldestAge==null || age>oldestAge) oldestAge = age;
+    });
+    $("prepCount").textContent = String(preparing.length);
+    $("prepOldest").textContent = `Oldest: ${msToHuman(oldestAge??NaN)}`;
+    $("compCount").textContent = String(completedCount);
+
+    // Avg prep time (created -> completed)
+    const prepTimes = orders.filter(o=>o.status==="completed").map(o=>{
+      const c = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const d = o?.timestamps?.completedAt?.toDate ? o.timestamps.completedAt.toDate() : null;
+      if(!c || !d) return null;
+      return d.getTime() - c.getTime();
+    }).filter(x=>x!=null);
+    const avgPrep = prepTimes.length ? prepTimes.reduce((a,x)=>a+x,0)/prepTimes.length : null;
+    $("avgPrep").textContent = `Avg prep: ${msToHuman(avgPrep??NaN)}`;
+
+    // Alerts
+    const alerts = [];
+    const stuckThresholdMin = 20;
+    const stuckCount = preparing.filter(o=>{
+      const t = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      if(!t) return false;
+      return (Date.now()-t.getTime()) > stuckThresholdMin*60000;
+    }).length;
+    if(stuckCount>=10) alerts.push(`⚠️ ${stuckCount} orders stuck in Preparing for > ${stuckThresholdMin} min`);
+
+    // High refund spike (simple heuristic)
+    const refundRate = ordersCount ? (validSalesOrders.filter(o=>o?.refund?.at).length / ordersCount) : 0;
+    if(refundRate >= 0.08 && validSalesOrders.filter(o=>o?.refund?.at).length >= 3){
+      alerts.push(`⚠️ Refund spike: ${(refundRate*100).toFixed(1)}% of orders refunded`);
+    }
+
+    $("alertsBox").textContent = alerts.length ? alerts.join(" • ") : "No alerts.";
+    $("alertsBox").className = "notice" + (alerts.length ? " dangerText" : "");
+    $("repAlerts").textContent = alerts.length ? alerts.join("\n") : "No alerts.";
+
+    // Queue health badge
+    if(stuckCount>=10) { $("queueHealth").textContent="Needs attention"; $("queueHealth").className="badge b-bad"; }
+    else if(stuckCount>0) { $("queueHealth").textContent="Watch"; $("queueHealth").className="badge b-warn"; }
+    else { $("queueHealth").textContent="OK"; $("queueHealth").className="badge b-ok"; }
+
+    // Charts: group by hour
+    const hours = new Map(); // key: YYYY-MM-DD HH
+    orders.forEach(o=>{
+      const t = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      if(!t) return;
+      const key = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")} ${String(t.getHours()).padStart(2,"0")}:00`;
+      const rec = hours.get(key) || {orders:0,sales:0};
+      if(o.status!=="cancelled"){
+        rec.orders += 1;
+        rec.sales += Number(o?.totals?.total||0);
+      }
+      hours.set(key, rec);
+    });
+    const labels = [...hours.keys()].sort();
+    const ordSeries = labels.map(k=>hours.get(k).orders);
+    const salesSeries = labels.map(k=>hours.get(k).sales);
+
+    // Peak chip
+    let peakIdx = -1; let peakVal = -1;
+    ordSeries.forEach((v,i)=>{ if(v>peakVal){peakVal=v; peakIdx=i;}});
+    $("peakChip").textContent = peakIdx>=0 ? `Peak: ${labels[peakIdx]}` : "Peak: —";
+
+    // Render charts
+    const oc = $("ordersChart").getContext("2d");
+    const sc = $("salesChart").getContext("2d");
+    if(ordersChart) ordersChart.destroy();
+    if(salesChart) salesChart.destroy();
+
+    ordersChart = new Chart(oc, {
+      type:"line",
+      data:{ labels, datasets:[{ label:"Orders/hour", data: ordSeries, tension:.35 }]},
+      options:{ responsive:true, plugins:{legend:{display:true}}, scales:{ x:{ticks:{color:"#a9b6d6"}}, y:{ticks:{color:"#a9b6d6"}} } }
+    });
+    salesChart = new Chart(sc, {
+      type:"line",
+      data:{ labels, datasets:[{ label:"Sales/hour", data: salesSeries, tension:.35 }]},
+      options:{ responsive:true, plugins:{legend:{display:true}}, scales:{ x:{ticks:{color:"#a9b6d6"}}, y:{ticks:{color:"#a9b6d6"}} } }
+    });
+
+    // Reports KPIs mirror overview
+    $("repKpis").innerHTML = kpis.slice(0,6).map(([t,v,s])=>`
+      <div class="kpi"><div class="t">${t}</div><div class="v">${v}</div><div class="s">${s}</div></div>
+    `).join("");
+  }
+
+  
+  /**************************************************************
+   * 13b) Kitchen & SLA / Customers / Refunds rendering
+   **************************************************************/
+  function renderKitchenSLA(){
+    const tbody = $("slaTable")?.querySelector("tbody");
+    if(!tbody) return;
+
+    const {start, end} = getPeriodRange();
+    const stuckMin = Number($("slaStuckMin")?.value||20);
+    const stuckMs = Math.max(1, stuckMin) * 60000;
+
+    const preparing = ordersCache.filter(o=>o.status==="preparing");
+    const nowMs = Date.now();
+
+    const stuck = preparing.map(o=>{
+      const created = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const age = created ? (nowMs - created.getTime()) : NaN;
+      return {o, created, age};
+    }).filter(x=>isFinite(x.age) && x.age > stuckMs).sort((a,b)=>b.age-a.age);
+
+    $("slaStuckChip").textContent = `Stuck: ${stuck.length}`;
+    tbody.innerHTML = stuck.map(x=>{
+      const o = x.o;
+      const orderNo = o.orderNumber || o.shortId || o.id.slice(-6);
+      return `
+        <tr>
+          <td><b>#${orderNo}</b></td>
+          <td class="muted">${tsToStr(o?.timestamps?.createdAt)}</td>
+          <td class="muted">${msToHuman(x.age)}</td>
+          <td>${fmtMoney(o?.totals?.total)}</td>
+          <td class="muted">${o?.customer?.name||"—"}</td>
+          <td><button class="btn" data-act="complete" data-id="${o.id}">Mark completed</button></td>
+        </tr>
+      `;
+    }).join("") || `<tr><td colspan="6" class="muted">No stuck orders.</td></tr>`;
+
+    tbody.querySelectorAll("button[data-act='complete']").forEach(btn=>{
+      btn.onclick = async ()=>{
+        const id = btn.dataset.id;
+        if(!confirm("Mark this order as completed?")) return;
+        await updateDoc(doc(db,"brands",BRAND_ID,"orders",id), {
+          status:"completed",
+          "timestamps.completedAt": serverTimestamp(),
+          "timestamps.updatedAt": serverTimestamp()
+        });
+      };
+    });
+
+    // Avg prep in period
+    const prepTimes = ordersCache.filter(o=>o.status==="completed" && inRangeOrder(o,start,end)).map(o=>{
+      const c = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const d = o?.timestamps?.completedAt?.toDate ? o.timestamps.completedAt.toDate() : null;
+      if(!c || !d) return null;
+      return d.getTime() - c.getTime();
+    }).filter(x=>x!=null);
+
+    const avg = prepTimes.length ? prepTimes.reduce((a,x)=>a+x,0)/prepTimes.length : null;
+    $("slaAvgChip").textContent = `Avg prep: ${msToHuman(avg??NaN)}`;
+
+    // Prep by hour (completed orders)
+    const hourMap = new Map();
+    ordersCache.filter(o=>o.status==="completed" && inRangeOrder(o,start,end)).forEach(o=>{
+      const c = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const d = o?.timestamps?.completedAt?.toDate ? o.timestamps.completedAt.toDate() : null;
+      if(!c || !d) return;
+      const hr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:00`;
+      const ms = d.getTime()-c.getTime();
+      const rec = hourMap.get(hr) || {sum:0,count:0};
+      rec.sum += ms; rec.count += 1;
+      hourMap.set(hr, rec);
+    });
+    const labels = [...hourMap.keys()].sort();
+    const series = labels.map(k=>{
+      const r = hourMap.get(k);
+      return r.count ? Math.round(r.sum/r.count/60000) : 0; // minutes
+    });
+    const ctx = $("prepByHourChart")?.getContext("2d");
+    if(ctx){
+      if(prepByHourChart) prepByHourChart.destroy();
+      prepByHourChart = new Chart(ctx, {
+        type:"bar",
+        data:{ labels, datasets:[{ label:"Avg prep (minutes) by hour", data: series }]},
+        options:{ responsive:true, plugins:{legend:{display:true}}, scales:{ x:{ticks:{color:"#a9b6d6"}}, y:{ticks:{color:"#a9b6d6"}} } }
+      });
+    }
+
+    // Prep by category (best-effort using order items)
+    const catMap = new Map();
+    ordersCache.filter(o=>o.status==="completed" && inRangeOrder(o,start,end)).forEach(o=>{
+      const c = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const d = o?.timestamps?.completedAt?.toDate ? o.timestamps.completedAt.toDate() : null;
+      if(!c || !d) return;
+      const ms = d.getTime()-c.getTime();
+      const cats = new Set();
+      (o.items||[]).forEach(it=>{
+        const cat = String(it.category||it.cat||"").trim();
+        if(cat) cats.add(cat);
+      });
+      if(cats.size===0) cats.add("Uncategorized");
+      cats.forEach(cat=>{
+        const rec = catMap.get(cat) || {sum:0,count:0};
+        rec.sum += ms; rec.count += 1;
+        catMap.set(cat, rec);
+      });
+    });
+    const catTbody = $("prepByCatTable")?.querySelector("tbody");
+    if(catTbody){
+      const cats = [...catMap.entries()].map(([cat,rec])=>({
+        cat,
+        avg: rec.count ? rec.sum/rec.count : null,
+        n: rec.count
+      })).sort((a,b)=>(b.n-a.n));
+      catTbody.innerHTML = cats.map(x=>`
+        <tr>
+          <td><b>${x.cat}</b></td>
+          <td class="muted">${msToHuman(x.avg??NaN)}</td>
+          <td class="muted">${x.n}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="3" class="muted">No completed orders in period.</td></tr>`;
+    }
+  }
+
+  function buildCustomersFromOrders(){
+    const {start, end} = getPeriodRange();
+    const map = new Map(); // key -> {name, phone, spend, orders, lastAt}
+    ordersCache.filter(o=>inRangeOrder(o,start,end) && o.status!=="cancelled").forEach(o=>{
+      const name = String(o?.customer?.name||"").trim() || "Walk-in";
+      const phone = String(o?.customer?.phone||"").trim() || "";
+      const key = phone ? ("p_"+phone) : ("n_"+name);
+      const created = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const total = Number(o?.totals?.total||0);
+
+      const rec = map.get(key) || {name, phone: phone||"—", spend:0, orders:0, lastAt:null};
+      rec.name = name;
+      rec.phone = phone ? phone : (rec.phone||"—");
+      rec.spend += total;
+      rec.orders += 1;
+      if(created && (!rec.lastAt || created>rec.lastAt)) rec.lastAt = created;
+      map.set(key, rec);
+    });
+    return [...map.values()].map(r=>({ ...r, lastAtStr: r.lastAt ? r.lastAt.toLocaleString() : "—"}));
+  }
+
+  function renderCustomers(){
+    const allTbody = $("customersTable")?.querySelector("tbody");
+    const topTbody = $("topCustomersTable")?.querySelector("tbody");
+    if(!allTbody || !topTbody) return;
+
+    const rows = buildCustomersFromOrders().sort((a,b)=>b.spend-a.spend);
+    const top = rows.slice(0,10);
+
+    const toRow = (c)=>`
+      <tr>
+        <td><b>${c.name}</b></td>
+        <td class="muted">${c.phone}</td>
+        <td class="muted">${c.orders}</td>
+        <td>${fmtMoney(c.spend)}</td>
+        <td class="muted">${c.lastAtStr}</td>
+      </tr>
+    `;
+    topTbody.innerHTML = top.map(toRow).join("") || `<tr><td colspan="5" class="muted">No customers in period.</td></tr>`;
+    allTbody.innerHTML = rows.map(toRow).join("") || `<tr><td colspan="5" class="muted">No customers in period.</td></tr>`;
+  }
+
+  function renderRefunds(){
+    const tbody = $("refundsTable")?.querySelector("tbody");
+    if(!tbody) return;
+    const {start, end} = getPeriodRange();
+
+    const refunds = ordersCache.filter(o=>{
+      const at = o?.refund?.at?.toDate ? o.refund.at.toDate() : null;
+      if(!at) return false;
+      return at >= start && at <= end;
+    }).map(o=>{
+      const at = o.refund.at.toDate();
+      const total = Number(o?.totals?.total||0);
+      const amt = (o.refund.amount==null) ? total : Number(o.refund.amount||0);
+      return {
+        id: o.id,
+        orderNo: o.orderNumber || o.shortId || o.id.slice(-6),
+        at,
+        amt,
+        reason: o.refund.reason || "—",
+        cashier: o?.payment?.cashier || o?.payment?.cashierName || "—",
+      };
+    }).sort((a,b)=>b.at-a.at);
+
+    const totalRefunded = refunds.reduce((a,x)=>a+x.amt,0);
+    $("refundsTotalChip").textContent = `Total refunded: ${fmtMoney(totalRefunded)}`;
+
+    tbody.innerHTML = refunds.map(r=>`
+      <tr>
+        <td><b>#${r.orderNo}</b></td>
+        <td class="muted">${r.at.toLocaleString()}</td>
+        <td>${fmtMoney(r.amt)}</td>
+        <td class="muted">${String(r.reason).replaceAll("<","&lt;")}</td>
+        <td class="muted">${r.cashier}</td>
+        <td><button class="btn" data-id="${r.id}">Open</button></td>
+      </tr>
+    `).join("") || `<tr><td colspan="6" class="muted">No refunds in selected period.</td></tr>`;
+
+    tbody.querySelectorAll("button").forEach(btn=>{
+      btn.onclick = ()=> openOrder(btn.dataset.id);
+    });
+  }
+
+  $("btnSlaRefresh").onclick = renderKitchenSLA;
+  $("slaStuckMin").onchange = renderKitchenSLA;
+
+  $("btnCustomersExport").onclick = ()=>{
+    const rows = buildCustomersFromOrders().sort((a,b)=>b.spend-a.spend);
+    const header = ["name","phone","orders","spend","lastOrder"];
+    const lines = [header.join(",")];
+    rows.forEach(c=>{
+      const vals = [c.name, c.phone==="—"?"":c.phone, c.orders, fmtMoney(c.spend), c.lastAtStr]
+        .map(v=>`"${String(v).replaceAll('"','""')}"`);
+      lines.push(vals.join(","));
+    });
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `customers_${BRAND_ID}_${toISODate(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  $("btnRefundsExport").onclick = ()=>{
+    const {start, end, mode} = getPeriodRange();
+    const rows = ordersCache.filter(o=>{
+      const at = o?.refund?.at?.toDate ? o.refund.at.toDate() : null;
+      return at && at>=start && at<=end;
+    }).map(o=>{
+      const at = o.refund.at.toDate();
+      const total = Number(o?.totals?.total||0);
+      const amt = (o.refund.amount==null) ? total : Number(o.refund.amount||0);
+      return [
+        o.id,
+        (o.orderNumber||o.shortId||o.id.slice(-6)),
+        at.toLocaleString(),
+        fmtMoney(amt),
+        (o.refund.reason||""),
+        (o?.payment?.cashier||o?.payment?.cashierName||"")
+      ];
+    });
+    const header = ["orderId","orderNumber","refundAt","amount","reason","cashier"];
+    const lines = [header.join(",")].concat(rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")));
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `refunds_${BRAND_ID}_${toISODate(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+/**************************************************************
+   * 14) Orders center
+   **************************************************************/
+  function rowBadge(status){
+    if(status==="completed") return `<span class="badge b-ok">completed</span>`;
+    if(status==="preparing") return `<span class="badge b-warn">preparing</span>`;
+    if(status==="cancelled") return `<span class="badge b-bad">cancelled</span>`;
+    return `<span class="badge">${status||"—"}</span>`;
+  }
+  function tsToStr(ts){
+    const d = ts?.toDate ? ts.toDate() : null;
+    if(!d) return "—";
+    return d.toLocaleString();
+  }
+
+  function renderOrdersTable(){
+    const tbody = $("ordersTable").querySelector("tbody");
+    if(!tbody) return;
+
+    const s = $("fStatus").value;
+    const p = $("fPay").value;
+    const r = $("fRefund").value;
+
+    let rows = ordersCache.slice();
+    if(s!=="all") rows = rows.filter(o=>o.status===s);
+    if(p!=="all") rows = rows.filter(o=>(o?.payment?.method||"")===p);
+    if(r==="refunded") rows = rows.filter(o=>o?.refund?.at);
+
+    tbody.innerHTML = rows.map(o=>{
+      const created = o?.timestamps?.createdAt?.toDate ? o.timestamps.createdAt.toDate() : null;
+      const completed = o?.timestamps?.completedAt?.toDate ? o.timestamps.completedAt.toDate() : null;
+      const prep = (created && completed) ? msToHuman(completed-created) : "—";
+      const flags = [
+        o?.refund?.at ? "refunded" : null,
+        (o?.totals?.discount||0)>0 ? "discount" : null
+      ].filter(Boolean).join(", ");
+      const cust = o?.customer?.name || "—";
+      return `
+        <tr data-id="${o.id}">
+          <td><b>#${o.orderNumber || o.shortId || o.id.slice(-6)}</b></td>
+          <td>${tsToStr(o?.timestamps?.createdAt)}</td>
+          <td>${rowBadge(o.status)}</td>
+          <td>${fmtMoney(o?.totals?.total)}</td>
+          <td class="muted">${o?.payment?.method||"—"}</td>
+          <td class="muted">${cust}</td>
+          <td class="muted">${prep}</td>
+          <td class="muted">${flags||"—"}</td>
+        </tr>
+      `;
+    }).join("");
+
+    [...tbody.querySelectorAll("tr")].forEach(tr=>{
+      tr.onclick = ()=> openOrder(tr.dataset.id);
+    });
+
+    if(selectedOrder){
+      // keep drawer updated
+      const still = ordersCache.find(x=>x.id===selectedOrder.id);
+      if(still) openOrder(still.id, true);
+    }
+  }
+
+  $("fStatus").onchange = renderOrdersTable;
+  $("fPay").onchange = renderOrdersTable;
+  $("fRefund").onchange = renderOrdersTable;
+
+  async function openOrder(orderId, silent=false){
+    const o = ordersCache.find(x=>x.id===orderId);
+    if(!o) return;
+    selectedOrder = o;
+    $("odTitle").textContent = `Order #${o.orderNumber || o.shortId || o.id.slice(-6)} — ${o.status || "—"}`;
+
+    // Items
+    const items = (o.items||[]).map(it=>`
+      <div class="kpi" style="margin-bottom:10px">
+        <div class="t">${it.name || "Item"} × ${it.qty || 1}</div>
+        <div class="v">${fmtMoney((Number(it.price||0))*(Number(it.qty||1)))}</div>
+        <div class="s">${it.note ? ("Note: "+it.note) : "—"}</div>
+      </div>
+    `).join("") || `<div class="notice">No items.</div>`;
+    $("odItems").innerHTML = items + `
+      <div class="notice" style="margin-top:10px">
+        <b>Totals</b><br>
+        Subtotal: ${fmtMoney(o?.totals?.subtotal)}<br>
+        Discount: ${fmtMoney(o?.totals?.discount)}<br>
+        Tax: ${fmtMoney(o?.totals?.tax)}<br>
+        <b>Total: ${fmtMoney(o?.totals?.total)}</b>
+      </div>
+      ${o.orderNote ? `<div class="notice" style="margin-top:10px"><b>Kitchen note:</b> ${o.orderNote}</div>` : ""}
+    `;
+
+    // Timeline
+    const tl = [];
+    tl.push(`<b>Created:</b> ${tsToStr(o?.timestamps?.createdAt)}`);
+    tl.push(`<b>Paid:</b> ${tsToStr(o?.payment?.paidAt)}`);
+    if(o?.timestamps?.completedAt) tl.push(`<b>Completed:</b> ${tsToStr(o.timestamps.completedAt)}`);
+    if(o?.timestamps?.cancelledAt) tl.push(`<b>Cancelled:</b> ${tsToStr(o.timestamps.cancelledAt)}`);
+    if(o?.refund?.at) tl.push(`<b>Refund:</b> ${fmtMoney(o.refund.amount==null ? o?.totals?.total : o.refund.amount)} at ${tsToStr(o.refund.at)}${o.refund.reason ? " — "+o.refund.reason : ""}`);
+    $("odTimeline").innerHTML = tl.join("<br>");
+
+    // QR preview (simple link)
+    const receiptUrl = `receipt.html?brandId=${encodeURIComponent(BRAND_ID)}&orderId=${encodeURIComponent(o.id)}`;
+    $("odQr").innerHTML = `<div class="notice"><a target="_blank" rel="noopener" href="${receiptUrl}">${receiptUrl}</a></div>`;
+
+    if(!silent) showPage("orders");
+  }
+
+  $("btnOdReceipt").onclick = ()=>{
+    if(!selectedOrder) return;
+    const url = `receipt.html?brandId=${encodeURIComponent(BRAND_ID)}&orderId=${encodeURIComponent(selectedOrder.id)}`;
+    window.open(url, "_blank");
+  };
+
+  $("btnOdComplete").onclick = async ()=>{
+    if(!selectedOrder) return;
+    if(!confirm("Mark this order as completed?")) return;
+    try{
+      await updateDoc(doc(db,"brands",BRAND_ID,"orders",selectedOrder.id), {
+        status:"completed",
+        "timestamps.completedAt": serverTimestamp(),
+        "timestamps.updatedAt": serverTimestamp()
+      });
+    }catch(e){ alert(e.message||"Failed"); }
+  };
+
+  $("btnOdCancel").onclick = async ()=>{
+    if(!selectedOrder) return;
+    if(!confirm("Cancel this order?")) return;
+    try{
+      await updateDoc(doc(db,"brands",BRAND_ID,"orders",selectedOrder.id), {
+        status:"cancelled",
+        "timestamps.cancelledAt": serverTimestamp(),
+        "timestamps.updatedAt": serverTimestamp()
+      });
+    }catch(e){ alert(e.message||"Failed"); }
+  };
+
+  $("btnOdRefund").onclick = async ()=>{
+    if(!selectedOrder) return;
+    if(!confirm("Record refund?")) return;
+    const amtRaw = $("refundAmt").value;
+    const reason = $("refundReason").value.trim();
+    const amt = amtRaw==="" ? null : Number(amtRaw);
+    try{
+      await updateDoc(doc(db,"brands",BRAND_ID,"orders",selectedOrder.id), {
+        refund: { amount: amt, reason: reason||null, at: serverTimestamp() },
+        "timestamps.updatedAt": serverTimestamp()
+      });
+      $("refundAmt").value="";
+      $("refundReason").value="";
+    }catch(e){ alert(e.message||"Failed"); }
+  };
+
+  $("btnOdNote").onclick = async ()=>{
+    if(!selectedOrder) return;
+    const note = prompt("Internal note (for disputes):");
+    if(note==null) return;
+    try{
+      await updateDoc(doc(db,"brands",BRAND_ID,"orders",selectedOrder.id), {
+        internalNote: note.trim() || null,
+        "timestamps.updatedAt": serverTimestamp()
+      });
+    }catch(e){ alert(e.message||"Failed"); }
+  };
+
+  // CSV export (filtered)
+  $("btnExportCsv").onclick = ()=>{
+    const s = $("fStatus").value;
+    const p = $("fPay").value;
+    const r = $("fRefund").value;
+    let rows = ordersCache.slice();
+    if(s!=="all") rows = rows.filter(o=>o.status===s);
+    if(p!=="all") rows = rows.filter(o=>(o?.payment?.method||"")===p);
+    if(r==="refunded") rows = rows.filter(o=>o?.refund?.at);
+
+    const header = ["orderId","orderNumber","status","createdAt","paidAt","completedAt","cancelledAt","total","paymentMethod","customerName","refundAmount","refundReason"];
+    const lines = [header.join(",")];
+    rows.forEach(o=>{
+      const total = Number(o?.totals?.total||0);
+      const rAmt = o?.refund?.at ? (o.refund.amount==null?total:Number(o.refund.amount||0)) : "";
+      const vals = [
+        o.id,
+        (o.orderNumber||o.shortId||""),
+        (o.status||""),
+        tsToStr(o?.timestamps?.createdAt),
+        tsToStr(o?.payment?.paidAt),
+        tsToStr(o?.timestamps?.completedAt),
+        tsToStr(o?.timestamps?.cancelledAt),
+        fmtMoney(total),
+        (o?.payment?.method||""),
+        (o?.customer?.name||""),
+        rAmt===""? "" : fmtMoney(rAmt),
+        (o?.refund?.reason||"")
+      ].map(v=>`"${String(v).replaceAll('"','""')}"`);
+      lines.push(vals.join(","));
+    });
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `orders_${BRAND_ID}_${toISODate(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  function exportFinanceCsv(){
+    const {start, end} = getPeriodRange();
+    const rows = ordersCache.filter(o=>inRangeOrder(o,start,end) && o.status!=="cancelled");
+    const byMethod = new Map();
+    rows.forEach(o=>{
+      const m = (o?.payment?.method||"unknown");
+      const rec = byMethod.get(m) || {count:0,gross:0,discount:0,refunded:0,net:0};
+      const gross = Number(o?.totals?.subtotal||0);
+      const disc = Number(o?.totals?.discount||0);
+      const total = Number(o?.totals?.total||0);
+      const refunded = o?.refund?.at ? Number(o?.refund?.amount==null ? total : (o?.refund?.amount||0)) : 0;
+      rec.count += 1;
+      rec.gross += gross;
+      rec.discount += disc;
+      rec.refunded += refunded;
+      rec.net += Math.max(0, total - refunded);
+      byMethod.set(m, rec);
+    });
+
+    const header = ["paymentMethod","orders","gross","discount","refunded","net"];
+    const lines = [header.join(",")];
+    [...byMethod.entries()].sort((a,b)=>b[1].net-a[1].net).forEach(([m,rec])=>{
+      const line = [m, rec.count, rec.gross.toFixed(2), rec.discount.toFixed(2), rec.refunded.toFixed(2), rec.net.toFixed(2)]
+        .map(v=>`"${String(v).replaceAll('"','""')}"`).join(",");
+      lines.push(line);
+    });
+
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `finance_${BRAND_ID}_${toISODate(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+
+  /**************************************************************
+   * 15) Staff management (username + PIN)
+   **************************************************************/
+  $("btnCreateStaff").onclick = async ()=>{
+    const u = $("staffUser").value.trim();
+    const pin = $("staffPin").value.trim();
+    const role = $("staffRole").value;
+    // Prevent duplicate usernames
+    if(staffCache.some(s=>String(s.username||s.id||"").trim().toLowerCase()===u.toLowerCase())){
+      return $("staffMsg").textContent = "This username already exists.";
+    }
+    if(!u || !pin) return $("staffMsg").textContent = "Enter username + PIN.";
+    if(pin.length < 4) return $("staffMsg").textContent = "PIN must be 4+ digits.";
+    $("staffMsg").textContent = "Creating…";
+    try{
+      const pinHash = await sha256Hex(pin);
+      const id = safeId(u);
+      await setDoc(doc(db,"brands",BRAND_ID,"staff",id), {
+        username:u,
+        role,
+        pinHash,
+        active:true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+      $("staffMsg").textContent = "Staff created.";
+      $("staffUser").value=""; $("staffPin").value="";
+    }catch(e){
+      console.error(e);
+      $("staffMsg").textContent = e.message||"Failed.";
+    }
+  };
+  $("btnClearStaff").onclick = ()=>{ $("staffUser").value=""; $("staffPin").value=""; $("staffMsg").textContent=""; };
+
+  function renderStaffTable(){
+    const tbody = $("staffTable").querySelector("tbody");
+    tbody.innerHTML = staffCache.map(s=>{
+      const active = !!s.active;
+      return `
+        <tr>
+          <td><b>${s.username||s.id}</b></td>
+          <td class="muted">${s.role||"—"}</td>
+          <td>${active ? `<span class="badge b-ok">active</span>` : `<span class="badge b-bad">disabled</span>`}</td>
+          <td class="muted">${tsToStr(s.createdAt)}</td>
+          <td>
+            <button class="btn" data-act="toggle" data-id="${s.id}">${active?"Disable":"Enable"}</button>
+            <button class="btn danger" data-act="delete" data-id="${s.id}">Delete</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.querySelectorAll("button").forEach(btn=>{
+      btn.onclick = async ()=>{
+        const id = btn.dataset.id;
+        const act = btn.dataset.act;
+        const ref = doc(db,"brands",BRAND_ID,"staff",id);
+        if(act==="toggle"){
+          const s = staffCache.find(x=>x.id===id);
+          await updateDoc(ref, { active: !s.active, updatedAt: serverTimestamp() });
+        }else if(act==="delete"){
+          if(!confirm("Delete this staff user?")) return;
+          await deleteDoc(ref);
+        }
+      };
+    });
+  }
+
+  /**************************************************************
+   * 16) Devices management
+   **************************************************************/
+  $("btnCreateDevice").onclick = async ()=>{
+    const name = $("devName").value.trim();
+    const role = $("devRole").value;
+    const ver = $("devVer").value.trim();
+    if(!name) return alert("Enter device name.");
+    try{
+      const id = safeId(name);
+      await setDoc(doc(db,"brands",BRAND_ID,"devices",id), {
+        name, role,
+        version: ver || null,
+        locked:false,
+        lastOnlineAt:null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+      $("devName").value=""; $("devVer").value="";
+    }catch(e){ alert(e.message||"Failed"); }
+  };
+  $("btnClearDevice").onclick = ()=>{ $("devName").value=""; $("devVer").value=""; };
+
+  function renderDevicesTable(){
+    const tbody = $("devicesTable").querySelector("tbody");
+    tbody.innerHTML = devicesCache.map(d=>{
+      const locked = !!d.locked;
+      return `
+        <tr>
+          <td><b>${d.name||d.id}</b></td>
+          <td class="muted">${d.role||"—"}</td>
+          <td>${locked ? `<span class="badge b-bad">locked</span>` : `<span class="badge b-ok">unlocked</span>`}</td>
+          <td class="muted">${tsToStr(d.lastOnlineAt)}</td>
+          <td>
+            <button class="btn" data-act="lock" data-id="${d.id}">${locked?"Unlock":"Lock"}</button>
+            <button class="btn danger" data-act="delete" data-id="${d.id}">Delete</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.querySelectorAll("button").forEach(btn=>{
+      btn.onclick = async ()=>{
+        const id = btn.dataset.id;
+        const act = btn.dataset.act;
+        const ref = doc(db,"brands",BRAND_ID,"devices",id);
+        if(act==="lock"){
+          const d = devicesCache.find(x=>x.id===id);
+          await updateDoc(ref, { locked: !d.locked, updatedAt: serverTimestamp() });
+        }else if(act==="delete"){
+          if(!confirm("Delete this device?")) return;
+          await deleteDoc(ref);
+        }
+      };
+    });
+  }
+
+  /**************************************************************
+   * 17) Products (create, delete, image upload) + CSV template/import
+   **************************************************************/
+  $("btnCreateProduct").onclick = async ()=>{
+    const name = $("pName").value.trim();
+    const category = $("pCat").value.trim();
+    const price = Number($("pPrice").value||0);
+    const desc = $("pDesc").value.trim() || null;
+    const imgFile = $("pImg").files?.[0] || null;
+
+    if(!name || !category) return $("prodMsg").textContent = "Name + category required.";
+    if(!isFinite(price) || price<0) return $("prodMsg").textContent = "Price must be valid.";
+    $("prodMsg").textContent = "Creating…";
+    try{
+      let imageUrl = null;
+      if(imgFile){
+        const path = `brands/${BRAND_ID}/products/${safeId(name)}_${Date.now()}`;
+        imageUrl = await uploadImage(imgFile, path);
+      }
+      const id = safeId(`${name}_${category}_${Date.now()}`);
+      await setDoc(doc(db,"brands",BRAND_ID,"products",id), {
+        name, category, price, desc,
+        imageUrl,
+        active:true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+      $("prodMsg").textContent = "Product created.";
+      $("pName").value=""; $("pCat").value=""; $("pPrice").value=""; $("pDesc").value=""; $("pImg").value="";
+    }catch(e){
+      console.error(e);
+      $("prodMsg").textContent = e.message || "Failed.";
+    }
+  };
+  $("btnClearProduct").onclick = ()=>{ $("pName").value=""; $("pCat").value=""; $("pPrice").value=""; $("pDesc").value=""; $("pImg").value=""; $("prodMsg").textContent=""; };
+
+  function renderProductsTable(){
+    const tbody = $("productsTable").querySelector("tbody");
+    tbody.innerHTML = productsCache.map(p=>{
+      const img = p.imageUrl ? `<a href="${p.imageUrl}" target="_blank" class="muted">view</a>` : "—";
+      return `
+        <tr>
+          <td><b>${p.name||"—"}</b></td>
+          <td class="muted">${p.category||"—"}</td>
+          <td>${fmtMoney(p.price)}</td>
+          <td class="muted">${img}</td>
+          <td class="muted">${tsToStr(p.updatedAt)}</td>
+          <td>
+            <button class="btn" data-act="toggle" data-id="${p.id}">${p.active===false?"Enable":"Disable"}</button>
+            <button class="btn danger" data-act="delete" data-id="${p.id}">Delete</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.querySelectorAll("button").forEach(btn=>{
+      btn.onclick = async ()=>{
+        const id = btn.dataset.id;
+        const act = btn.dataset.act;
+        const ref = doc(db,"brands",BRAND_ID,"products",id);
+        if(act==="toggle"){
+          const p = productsCache.find(x=>x.id===id);
+          await updateDoc(ref, { active: !(p.active!==false), updatedAt: serverTimestamp() });
+        }else if(act==="delete"){
+          if(!confirm("Delete this product?")) return;
+          await deleteDoc(ref);
+        }
+      };
+    });
+  }
+
+  // Download template CSV (Excel-friendly)
+  $("btnDownloadTemplate").onclick = ()=>{
+    const header = ["name","category","price","desc","imageUrl","active"];
+    const sample = [
+      ["Burger","Sandwiches","120","Beef burger",""],
+      ["Fries","Sides","60","Crispy fries",""],
+      ["Cola","Drinks","35","Can",""]
+    ];
+    const lines = [header.join(",")].concat(sample.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")));
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `products_template_${BRAND_ID}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  // Import CSV
+  $("importFile").addEventListener("change", async (e)=>{
+    const file = e.target.files?.[0];
+    if(!file) return;
+    $("prodMsg").textContent = "Importing…";
+    try{
+      let rows = [];
+      const nameLower = (file.name||"").toLowerCase();
+
+      if(nameLower.endsWith(".xlsx")){
+        // XLSX via SheetJS
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, {type:"array"});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false});
+      }else{
+        // CSV
+        const text = await file.text();
+        rows = parseCsv(text);
+      }
+
+      if(!rows || rows.length<2) throw new Error("File seems empty.");
+      const header = rows[0].map(h=>String(h||"").trim().toLowerCase());
+      const idx = (name)=> header.indexOf(name);
+
+      const iName = idx("name");
+      const iCat = idx("category");
+      const iDesc = idx("desc");
+      const iPrice = idx("price");
+      const iImg = idx("imageurl");
+      const iActive = idx("active");
+
+      if(iName<0 || iCat<0 || iPrice<0) throw new Error("Import requires columns: name, category, price. Optional: desc, imageUrl, active.");
+
+      let ok=0, bad=0;
+      for(let r=1; r<rows.length; r++){
+        const row = rows[r] || [];
+        if(row.every(c=>String(c||"").trim()==="")) continue;
+
+        const name = String(row[iName]||"").trim();
+        const category = String(row[iCat]||"").trim();
+        const price = Number(String(row[iPrice]||"").trim());
+        const desc = iDesc>=0 ? (String(row[iDesc]||"").trim()||null) : null;
+        const imageUrl = iImg>=0 ? (String(row[iImg]||"").trim()||null) : null;
+
+        let active = true;
+        if(iActive>=0){
+          const a = String(row[iActive]||"").trim().toLowerCase();
+          if(a==="false" || a==="0" || a==="no") active = false;
+        }
+
+        if(!name || !category || !isFinite(price)){ bad++; continue; }
+        const id = safeId(`${name}_${category}_${Date.now()}_${r}`);
+        await setDoc(doc(db,"brands",BRAND_ID,"products",id), {
+          name, category, price, desc, imageUrl,
+          active,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, {merge:true});
+        ok++;
+      }
+      $("prodMsg").textContent = `Import done. Added ${ok}, skipped ${bad}.`;
+      $("importFile").value = "";
+    }catch(err){
+      console.error(err);
+      $("prodMsg").textContent = err.message || "Import failed.";
+      $("importFile").value = "";
+    }
+  });
+
+        ok++;
+      }
+      $("prodMsg").textContent = `Import done. Added ${ok}, skipped ${bad}.`;
+      $("importFile").value = "";
+    }catch(err){
+      console.error(err);
+      $("prodMsg").textContent = err.message || "Import failed.";
+      $("importFile").value = "";
+    }
+  });
+
+  function parseCsv(text){
+    // minimal CSV parser (handles quotes)
+    const rows = [];
+    let row = [];
+    let cur = "";
+    let inQ = false;
+    for(let i=0;i<text.length;i++){
+      const ch = text[i];
+      const next = text[i+1];
+      if(inQ){
+        if(ch === '"' && next === '"'){ cur += '"'; i++; }
+        else if(ch === '"'){ inQ = false; }
+        else cur += ch;
+      }else{
+        if(ch === '"'){ inQ = true; }
+        else if(ch === ','){ row.push(cur); cur=""; }
+        else if(ch === '\n'){
+          row.push(cur); rows.push(row);
+          row=[]; cur="";
+        }else if(ch === '\r'){ /* ignore */ }
+        else cur += ch;
+      }
+    }
+    if(cur.length || row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  /**************************************************************
+   * 18) Reports buttons
+   **************************************************************/
+  function renderReportView(){
+    // Uses overview KPIs + alerts already updated
+  }
+  $("btnReportFinance").onclick = ()=> exportFinanceCsv();
+  $("btnReportOps").onclick = ()=>{ showPage("overview"); window.print(); };
+  $("btnReportExec").onclick = ()=>{ showPage("reports"); window.print(); }; window.print(); };
+
+  /**************************************************************
+   * 19) Dangerous bulk delete (orders)
+   **************************************************************/
+  $("btnDeleteAllOrders").onclick = async ()=>{
+    if(!confirm("Cancel ALL orders for this vendor? (Writes status=cancelled — no hard deletes)")) return;
+    const snap = await getDocs(query(ordersCol(), limit(1000)));
+    let n=0;
+    for(const d of snap.docs){
+      const o = d.data()||{};
+      if(o.status==="cancelled") continue;
+      await updateDoc(d.ref, {
+        status:"cancelled",
+        "timestamps.cancelledAt": serverTimestamp(),
+        "timestamps.updatedAt": serverTimestamp()
+      });
+      n++;
+    }
+    alert(`Cancelled ${n} orders (first 1000). If you have more, run again.`);
+  };
+      if(o.status === "cancelled") continue;
+      await updateDoc(d.ref, {
+        status:"cancelled",
+        "timestamps.cancelledAt": serverTimestamp(),
+        "timestamps.updatedAt": serverTimestamp()
+      });
+      n++;
+    }
+    alert(`Cancelled ${n} orders (first 1000). If you have more, run again.`);
+  };
+
+  /**************************************************************
+   * 20) Print button
+   **************************************************************/
+  $("btnPrint").onclick = ()=> window.print();
+</script>
+</body>
+</html>
