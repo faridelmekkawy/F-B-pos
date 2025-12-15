@@ -141,6 +141,22 @@
     @media (max-width: 980px){
       .layout{grid-template-columns:1fr}
     }
+#qrcode{
+  width:260px;
+  height:260px;
+  background:#fff;
+  padding:14px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 18px 50px rgba(0,0,0,.25);
+}
+#qrcode canvas, #qrcode img{
+  width:100% !important;
+  height:100% !important;
+  border-radius:14px;
+}
 
     /* Board-only idle mode */
     body.boardOnly .layout{grid-template-columns:1fr}
@@ -599,7 +615,7 @@
 
       // ===== Board listener =====
       const ordersRef = collection(db, `brands/${brandId}/orders`);
-      const boardQuery = query(ordersRef, orderBy("createdAt", "desc"), limit(120));
+const boardQuery = query(ordersRef, orderBy("timestamps.createdAt", "desc"), limit(120));
 
       unsubBoard = onSnapshot(boardQuery, (snap) => {
         const now = Date.now();
@@ -615,14 +631,14 @@
           const o = ds.data() || {};
           const n = String(o.orderNumber || o.orderNo || o.shortId || ds.id.slice(-3)).toUpperCase();
 
-          const created = tsToDate(o.createdAt) || tsToDate(o.updatedAt);
+const created = tsToDate(o.timestamps?.createdAt) || tsToDate(o.timestamps?.updatedAt);
           if(created) newestTs = Math.max(newestTs, created.getTime());
 
           if(o.status === "preparing"){
             preparing.push(n);
           } else if(o.status === "completed"){
             // hide ready orders older than 15 minutes
-            const comp = tsToDate(o.completedAt) || tsToDate(o.updatedAt) || created;
+const comp = tsToDate(o.timestamps?.completedAt) || tsToDate(o.timestamps?.updatedAt) || created;
             const age = comp ? (now - comp.getTime()) : 0;
             if(age <= readyMaxAgeMs){
               ready.push(n);
