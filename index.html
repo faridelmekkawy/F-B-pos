@@ -31,7 +31,9 @@
       color:var(--ink);
     }
 
-    /* AUTH WRAPPER */
+    .hidden{display:none!important;}
+
+/* AUTH WRAPPER */
     .auth-wrapper{
       width:100%;
       max-width:460px;
@@ -402,14 +404,17 @@ body{background:var(--bg)!important;}
         <div id="sidebar-brand-name" class="sidebar-brand-name">Brand</div>
       </div>
       <nav id="sidebarNav" class="sidebar-nav">
-        <button class="nav-item active" data-page="page-dashboard">Dashboard</button>
-        <button class="nav-item" data-page="page-products">Products</button>
-        <button class="nav-item" data-page="page-branches">Branches</button>
-        <button class="nav-item" data-page="page-staff">Staff</button>
-        <button class="nav-item" data-page="page-customers">Customers</button>
-        <button class="nav-item" data-page="page-orders">Orders</button>
-        <button class="nav-item" data-page="page-settings">Settings</button>
-      </nav>
+        <button class="nav-item active" data-key="overview">Dashboard</button>
+        <button class="nav-item" data-key="orders">Orders</button>
+        <button class="nav-item" data-key="kitchen">Kitchen & SLA</button>
+        <button class="nav-item" data-key="customers">Customers</button>
+        <button class="nav-item" data-key="refunds">Refunds / Disputes</button>
+        <button class="nav-item" data-key="products">Products</button>
+        <button class="nav-item" data-key="staff">Staff</button>
+        <button class="nav-item" data-key="devices">Devices</button>
+        <button class="nav-item" data-key="reports">Reports</button>
+        <button class="nav-item" data-key="settings">Settings</button>
+</nav>
       <button id="btnSignOut" class="nav-item logout">Logout</button>
     </aside>
 
@@ -1116,81 +1121,180 @@ const $ = (id)=>{
   }
 
   /**************************************************************
-   * 8) Auth actions
+   * 8) Auth actions (AUTO LOGIN + AUTO BRAND RESOLVE)
    **************************************************************/
-  $("btnSignup").onclick = async ()=>{
+  const LS_KEYS = {
+    brandId: "luma.vendor.brandId",
+    lastEmail: "luma.vendor.lastEmail"
+  };
+
+  function setAuthAlert(msg, kind="info"){
+    const c = document.getElementById("auth-alert-container");
+    if(!c) return;
+    if(!msg){ c.innerHTML=""; return; }
+    const cls = kind==="error" ? "auth-alert auth-alert-error" : "auth-alert auth-alert-info";
+    c.innerHTML = `<div class="${cls}">${msg}</div>`;
+  }
+
+  function showAuthTab(which){
+    const loginTab = document.getElementById("tab-login");
+    const createTab = document.getElementById("tab-create");
+    const loginForm = document.getElementById("login-form");
+    const createForm = document.getElementById("create-form");
+    if(!loginTab||!createTab||!loginForm||!createForm) return;
+    const isLogin = which==="login";
+    loginTab.classList.toggle("active", isLogin);
+    createTab.classList.toggle("active", !isLogin);
+    loginForm.style.display = isLogin ? "block" : "none";
+    createForm.style.display = isLogin ? "none" : "block";
+  }
+
+  document.getElementById("tab-login")?.addEventListener("click", ()=>showAuthTab("login"));
+  document.getElementById("tab-create")?.addEventListener("click", ()=>showAuthTab("create"));
+
+  function persistBrandId(id){
+    if(id) localStorage.setItem(LS_KEYS.brandId, id);
+  }
+  function readBrandId(){
+    return localStorage.getItem(LS_KEYS.brandId) || null;
+  }
+
+  async function resolveBrandIdForUser(uid){
+    if(BRAND_ID) return BRAND_ID;
+
+    // 1) cached
+    const cached = readBrandId();
+    if(cached){
+      BRAND_ID = cached;
+      return BRAND_ID;
+    }
+
+    // 2) find by ownerUid
+    const q1 = query(collection(db, "brands"), where("ownerUid","==", uid), limit(1));
+    const snap = await getDocs(q1);
+    if(!snap.empty){
+      BRAND_ID = snap.docs[0].id;
+      persistBrandId(BRAND_ID);
+      return BRAND_ID;
+    }
+    return null;
+  }
+
+  async function createUniqueBrandId(base){
+    let id = safeId(base);
+    if(!id) id = "brand";
+    const uid = auth.currentUser?.uid || "";
+    const suffix = uid ? ("_" + uid.slice(0,6)) : ("_" + Math.random().toString(16).slice(2,6));
+    id = (id + suffix).slice(0,64);
+
+    let tries = 0;
+    while(tries < 6){
+      const test = await getDoc(doc(db, "brands", id));
+      if(!test.exists()) return id;
+      id = (safeId(base) + "_" + Math.random().toString(16).slice(2,8)).slice(0,64);
+      tries++;
+    }
+    return id;
+  }
+
+  // Login
+  document.getElementById("login-form")?.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    setAuthAlert("");
     try{
-      const email = $("email").value.trim();
-      const pass = $("pass").value;
-      const id = safeId($("brandId").value);
-      const name = $("brandName").value.trim() || "Vendor";
-      if(!email || !pass) return toast("Enter email + password.", false);
-      if(!id) return toast("Enter Brand ID.", false);
-      BRAND_ID = id;
+      const email = document.getElementById("login-email")?.value?.trim() || "";
+      const pass  = document.getElementById("login-password")?.value || "";
+      if(!email || !pass) return setAuthAlert("Enter email + password.", "error");
+      localStorage.setItem(LS_KEYS.lastEmail, email);
+      await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged finishes
+    }catch(err){
+      console.error(err);
+      setAuthAlert(err?.message || "Sign in failed.", "error");
+    }
+  });
+
+  // Create brand
+  document.getElementById("create-form")?.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    setAuthAlert("");
+    try{
+      const brandName = document.getElementById("brand-name")?.value?.trim() || "Vendor";
+      const country   = document.getElementById("brand-country")?.value?.trim() || "";
+      const ownerName = document.getElementById("owner-name")?.value?.trim() || "";
+      const email     = document.getElementById("owner-email")?.value?.trim() || "";
+      const pass      = document.getElementById("owner-password")?.value || "";
+
+      if(!email || !pass) return setAuthAlert("Enter email + password.", "error");
+      if(pass.length < 6) return setAuthAlert("Password must be at least 6 characters.", "error");
+
+      localStorage.setItem(LS_KEYS.lastEmail, email);
 
       await createUserWithEmailAndPassword(auth, email, pass);
-      // Create brand doc immediately
+
+      BRAND_ID = await createUniqueBrandId(brandName);
+      persistBrandId(BRAND_ID);
+
       await setDoc(brandRef(), {
-        name,
-        ownerUid: auth.currentUser.uid,
+        name: brandName,
+        country: country || null,
+        ownerName: ownerName || null,
+        ownerUid: auth.currentUser?.uid || null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       }, {merge:true});
 
       await heal();
-      toast("Vendor created. Signed in.", true);
-    }catch(e){
-      console.error(e);
-      toast(e.message || "Signup failed.", false);
+      setAuthAlert("Brand created. You're signed in.", "info");
+      // onAuthStateChanged finishes
+    }catch(err){
+      console.error(err);
+      setAuthAlert(err?.message || "Create brand failed.", "error");
     }
-  };
+  });
 
-  $("btnSignin").onclick = async ()=>{
+  // Logout
+  document.getElementById("btnSignOut")?.addEventListener("click", async ()=>{
     try{
-      const email = $("email").value.trim();
-      const pass = $("pass").value;
-      const id = safeId($("brandId").value);
-      if(!email || !pass) return toast("Enter email + password.", false);
-      if(!id) return toast("Enter Brand ID.", false);
-      BRAND_ID = id;
+      await signOut(auth);
+    }catch(e){ console.warn(e); }
+  });
 
-      await signInWithEmailAndPassword(auth, email, pass);
-      await heal();
-      toast("Signed in.", true);
-    }catch(e){
-      console.error(e);
-      toast(e.message || "Signin failed.", false);
-    }
-  };
-
-  $("btnSignOut").onclick = async ()=>{
-    await signOut(auth);
-  };
-
+  // Auto-login: Firebase already persists session, we just auto-resolve BRAND_ID
   onAuthStateChanged(auth, async (user)=>{
     if(!user){
-      $("authCard").classList.remove("hidden");
-      $("app").classList.add("hidden");
-      $("btnSignOut").disabled = true;
-      setAuthPill("Not signed in");
+      BRAND_ID = null;
       BRAND = null;
       teardownRealtime();
+
+      document.getElementById("authCard")?.classList.remove("hidden");
+      const appView = document.getElementById("app-view");
+      if(appView){ appView.style.display = "none"; }
+
+      showAuthTab("login");
+      const lastEmail = localStorage.getItem(LS_KEYS.lastEmail);
+      if(lastEmail){
+        const le = document.getElementById("login-email");
+        if(le && !le.value) le.value = lastEmail;
+      }
       return;
     }
 
-    if(!BRAND_ID){
-      // User signed in but brandId not set in this session
-      $("authMsg").textContent = "Enter Brand ID then sign in.";
+    // Resolve brand id
+    const resolved = await resolveBrandIdForUser(user.uid);
+    if(!resolved){
+      // This account has no brand yet (or local cache is empty)
       await signOut(auth);
+      showAuthTab("create");
+      setAuthAlert("No brand found for this account. Please create your brand.", "error");
       return;
     }
 
-    // Load brand
+    // Ensure brand doc exists (no DB touch rule)
     const b = await getDoc(brandRef());
     if(!b.exists()){
-      // auto-create to honor "no DB touch"
       await setDoc(brandRef(), {
-        name: $("brandName").value.trim() || "Vendor",
+        name: "Vendor",
         ownerUid: user.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -1198,21 +1302,26 @@ const $ = (id)=>{
     }
     const b2 = await getDoc(brandRef());
     BRAND = { id: BRAND_ID, ...(b2.data()||{}) };
+    persistBrandId(BRAND_ID);
 
-    $("authCard").classList.add("hidden");
-    $("app").classList.remove("hidden");
-    $("btnSignOut").disabled = false;
+    // Switch views
+    document.getElementById("authCard")?.classList.add("hidden");
+    const appView = document.getElementById("app-view");
+    if(appView){ appView.style.display = "flex"; }
 
-    setAuthPill(`Signed in • ${BRAND_ID}`);
-    $("brandTitle").textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Vendor Dashboard";
+    // Header names
+    const sbn = document.getElementById("sidebar-brand-name");
+    if(sbn) sbn.textContent = BRAND?.name || "Brand";
+    const tbt = document.getElementById("topbar-brand-title");
+    if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand Dashboard";
 
     await heal();
     await loadSettingsBranding();
     setupTabs();
+    bindSidebarNav();
     startRealtime();
   });
-
-  /**************************************************************
+/**************************************************************
    * 9) Tabs
    **************************************************************/
   const PAGES = [
@@ -1239,6 +1348,19 @@ const $ = (id)=>{
       el.appendChild(b);
     });
     showPage("overview");
+  }
+
+  function bindSidebarNav(){
+    const nav = document.getElementById("sidebarNav");
+    if(!nav) return;
+    nav.querySelectorAll(".nav-item[data-key]").forEach(btn=>{
+      btn.onclick = ()=>{
+        // active styling
+        nav.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+        btn.classList.add("active");
+        showPage(btn.dataset.key);
+      };
+    });
   }
 
   function showPage(key){
