@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Luma — Customer Display</title>
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:rgba(255,255,255,.08);
+      --panel2:rgba(255,255,255,.12);
+      --ink:#ffffff;
+      --muted:rgba(255,255,255,.75);
+      --border:rgba(255,255,255,.14);
+      --accent:#60a5fa;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --radius:18px;
+      --shadow:0 18px 50px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(96,165,250,.18), transparent 55%),
+                  radial-gradient(1200px 800px at 80% 80%, rgba(34,197,94,.14), transparent 55%),
+                  var(--bg);
+      color:var(--ink);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px 22px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(to bottom, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 0;
+    }
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      background:rgba(255,255,255,.12);
+      border:1px solid var(--border);
+      display:grid; place-items:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .logo img{width:100%; height:100%; object-fit:cover}
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      line-height:1.1;
+      font-weight:800;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 48vw;
+    }
+    .sub{
+      margin:2px 0 0;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      font-weight:800;
+      letter-spacing:.2px;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .dot{width:10px;height:10px;border-radius:999px;background:var(--warn)}
+    .dot.ok{background:var(--ok)}
+    .dot.bad{background:var(--danger)}
+
+    main{
+      flex:1;
+      padding:18px 22px 16px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      main{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:linear-gradient(to bottom, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background:rgba(255,255,255,.04);
+    }
+    .card .hd b{font-size:14px}
+    .card .bd{padding:14px 16px}
+
+    .muted{color:var(--muted)}
+    .bigTotal{
+      font-size:44px;
+      font-weight:900;
+      letter-spacing:.4px;
+      margin:10px 0 6px;
+    }
+    .grid2{
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    .kv{
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      display:flex; justify-content:space-between; gap:10px;
+      font-weight:700;
+    }
+    .kv span{color:var(--muted); font-weight:700}
+
+    .items{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      display:flex; justify-content:space-between; gap:10px;
+    }
+    .item .l{
+      min-width:0;
+    }
+    .item .name{
+      font-weight:900;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      max-width: 52vw;
+    }
+    .item .meta{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .item .r{
+      text-align:right;
+      font-weight:900;
+      flex:0 0 auto;
+    }
+    .note{
+      margin-top:8px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.24);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.85);
+      font-weight:700;
+    }
+
+    .qrWrap{
+      display:grid;
+      place-items:center;
+      padding:16px;
+      gap:12px;
+    }
+    #qrcode{
+      width:220px; height:220px;
+      background:#fff;
+      padding:12px;
+      border-radius:18px;
+    }
+    .qrHint{
+      text-align:center;
+      font-weight:800;
+      color:rgba(255,255,255,.9);
+      line-height:1.3;
+    }
+    .smallBtn{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.08);
+      color:var(--ink);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .smallBtn:hover{background:rgba(255,255,255,.12)}
+    .pairBox{
+      max-width:560px;
+      margin:22px auto 0;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.07);
+      box-shadow:var(--shadow);
+    }
+    .pairBox h2{margin:0 0 8px; font-size:18px}
+    .row{display:flex; gap:10px; margin-top:10px}
+    input{
+      flex:1;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.22);
+      color:var(--ink);
+      font-weight:800;
+      outline:none;
+    }
+    footer{
+      padding:12px 18px;
+      border-top:1px solid var(--border);
+      color:rgba(255,255,255,.70);
+      font-weight:800;
+      text-align:center;
+      background:rgba(255,255,255,.03);
+    }
+  </style>
+
+  <!-- QR generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" id="logoBox"><span style="font-weight:900;color:rgba(255,255,255,.7)">🍔</span></div>
+      <div style="min-width:0">
+        <h1 id="brandName">Customer Screen</h1>
+        <div class="sub" id="subLine">Waiting for the next paid order…</div>
+      </div>
+    </div>
+    <div class="pill" id="statusPill"><span class="dot" id="dot"></span><span id="statusTxt">Idle</span></div>
+  </header>
+
+  <div id="pairing" class="pairBox" style="display:none">
+    <h2>Pair this customer screen</h2>
+    <div class="muted">Enter your <b>Brand ID</b> once. This screen will then auto-show the latest paid order.</div>
+    <div class="row">
+      <input id="brandIdInput" placeholder="Brand ID (e.g. B001)" autocomplete="off"/>
+      <button class="smallBtn" id="pairBtn" style="max-width:160px">Pair</button>
+    </div>
+    <div class="muted" style="margin-top:10px;font-size:12px">
+      Tip: you can reset pairing anytime with the “Reset Screen” button.
+    </div>
+  </div>
+
+  <main id="mainUI" style="display:none">
+    <section class="card">
+      <div class="hd">
+        <b>Order Summary</b>
+        <div class="muted" id="orderMeta">—</div>
+      </div>
+      <div class="bd">
+        <div class="bigTotal" id="grandTotal">—</div>
+
+        <div class="grid2" style="margin-top:10px">
+          <div class="kv"><span>Subtotal</span><b id="subTotal">—</b></div>
+          <div class="kv"><span>Tax</span><b id="tax">—</b></div>
+          <div class="kv"><span>Discount</span><b id="discount">—</b></div>
+          <div class="kv"><span>Payment</span><b id="payment">—</b></div>
+        </div>
+
+        <div class="items" id="items"></div>
+
+        <div class="note" id="orderNote" style="display:none"></div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="hd">
+        <b>Receipt QR</b>
+        <div class="muted" id="qrMeta">—</div>
+      </div>
+      <div class="bd qrWrap">
+        <div id="qrcode"></div>
+        <div class="qrHint" id="qrHint">Scan to view your receipt</div>
+        <button class="smallBtn" id="resetBtn">Reset Screen</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer>Powered by Luma</footer>
+
+  <script type="module">
+    // =========================
+    // 1) Firebase imports
+    // =========================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    // =========================
+    // 2) Firebase config
+    // =========================
+    const firebaseConfig = {
+    apiKey:"AIzaSyA80bAAGPuyscnTVS-zwrxE9Jp3tPiS1gM",
+    authDomain:"events-339ce.firebaseapp.com",
+    databaseURL:"https://events-339ce-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:"events-339ce",
+    storageBucket:"events-339ce.firebasestorage.app",
+    messagingSenderId:"175601544315",
+    appId:"1:175601544315:web:00c94b4affa972b3a286de"
+  
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // =========================
+    // 3) Helpers
+    // =========================
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => {
+      const v = Number(n || 0);
+      return v.toLocaleString(undefined, { style:"currency", currency:"EGP", maximumFractionDigits:2 });
+    };
+    const tsToDate = (t) => {
+      if(!t) return null;
+      if (typeof t.toDate === "function") return t.toDate();
+      if (t.seconds) return new Date(t.seconds * 1000);
+      return null;
+    };
+    function setStatus(status){
+      const dot = $("dot");
+      const txt = $("statusTxt");
+      const pill = $("statusPill");
+      txt.textContent = status || "Idle";
+      dot.classList.remove("ok","bad");
+      if(status === "completed") dot.classList.add("ok");
+      else if(status === "cancelled") dot.classList.add("bad");
+    }
+    function setBrandHeader({name, logoUrl}){
+      $("brandName").textContent = name || "Customer Screen";
+      const box = $("logoBox");
+      if(logoUrl){
+        box.innerHTML = `<img alt="logo" src="${logoUrl}">`;
+      }else{
+        box.innerHTML = `<span style="font-weight:900;color:rgba(255,255,255,.7)">🍔</span>`;
+      }
+    }
+
+    // =========================
+    // 4) Pairing logic (no params)
+    // =========================
+    const LS_KEY = "luma_brandId_customerScreen";
+    let brandId = localStorage.getItem(LS_KEY) || "";
+    let unsubRuntime = null;
+    let unsubOrder = null;
+    let lastOrderId = null;
+
+    function showPairing(){
+      $("pairing").style.display = "block";
+      $("mainUI").style.display = "none";
+      $("subLine").textContent = "Pair this screen to a brand.";
+      setStatus("Idle");
+    }
+    function showUI(){
+      $("pairing").style.display = "none";
+      $("mainUI").style.display = "grid";
+    }
+
+    $("pairBtn").onclick = () => {
+      const v = ($("brandIdInput").value || "").trim();
+      if(!v) return;
+      brandId = v;
+      localStorage.setItem(LS_KEY, brandId);
+      boot();
+    };
+
+    $("resetBtn").onclick = () => {
+      localStorage.removeItem(LS_KEY);
+      location.reload();
+    };
+
+    // =========================
+    // 5) Core listeners
+    // =========================
+    async function boot(){
+      if(unsubRuntime) unsubRuntime();
+      if(unsubOrder) unsubOrder();
+      unsubRuntime = null;
+      unsubOrder = null;
+      lastOrderId = null;
+
+      if(!brandId){
+        showPairing();
+        return;
+      }
+
+      // Try to show brand header from brand doc (fallback)
+      try{
+        const bSnap = await getDoc(doc(db, `brands/${brandId}`));
+        if(bSnap.exists()){
+          const b = bSnap.data();
+          setBrandHeader({ name: b.name || b.brandName || `Brand ${brandId}`, logoUrl: b.logoUrl || b.brandLogoUrl });
+        }else{
+          setBrandHeader({ name: `Brand ${brandId}`, logoUrl: "" });
+        }
+      }catch{
+        setBrandHeader({ name: `Brand ${brandId}`, logoUrl: "" });
+      }
+
+      showUI();
+      $("subLine").textContent = "Waiting for the next paid order…";
+      setStatus("Idle");
+      $("orderMeta").textContent = "—";
+      $("qrMeta").textContent = "—";
+      $("items").innerHTML = "";
+      $("grandTotal").textContent = "—";
+      $("subTotal").textContent = "—";
+      $("tax").textContent = "—";
+      $("discount").textContent = "—";
+      $("payment").textContent = "—";
+      $("orderNote").style.display = "none";
+      $("qrcode").innerHTML = "";
+
+      const runtimeRef = doc(db, `brands/${brandId}/runtime/customerDisplay`);
+
+      unsubRuntime = onSnapshot(runtimeRef, async (snap) => {
+        const d = snap.exists() ? snap.data() : {};
+        const oid = d.lastPaidOrderId || d.currentOrderId || d.orderId || null;
+
+        if(!oid){
+          $("subLine").textContent = "No paid orders yet.";
+          setStatus("Idle");
+          $("qrcode").innerHTML = "";
+          $("qrHint").textContent = "QR will appear after payment";
+          return;
+        }
+        if(oid === lastOrderId) return;
+        lastOrderId = oid;
+
+        // subscribe to that order
+        if(unsubOrder) unsubOrder();
+
+        const orderRef = doc(db, `brands/${brandId}/orders/${oid}`);
+
+        unsubOrder = onSnapshot(orderRef, async (os) => {
+          if(!os.exists()){
+            $("subLine").textContent = "Order not found.";
+            setStatus("Idle");
+            return;
+          }
+          const o = os.data();
+
+          // Prefer brand name/logo stored in order (stable even if brand doc changes)
+          setBrandHeader({
+            name: o.brandName || o.brand?.name || $("brandName").textContent,
+            logoUrl: o.brandLogoUrl || o.brand?.logoUrl || (await (async()=>{ try{ const bSnap = await getDoc(doc(db, `brands/${brandId}`)); return bSnap.exists() ? (bSnap.data().logoUrl||"") : ""; }catch{return "";} })())
+          });
+
+          const status = o.status || "preparing";
+          setStatus(status);
+
+          // Meta line
+          const created = tsToDate(o.createdAt || o.timestamps?.createdAt);
+          const when = created ? created.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "—";
+          const orderNo = o.orderNumber || o.orderNo || o.shortId || oid.slice(-6);
+          $("orderMeta").textContent = `Order #${orderNo} • ${when}`;
+          $("subLine").textContent = status === "completed"
+            ? "Your order is completed ✅"
+            : status === "cancelled"
+              ? "This order was cancelled."
+              : "Your order is being prepared…";
+
+          // Totals
+          const totals = o.totals || {};
+          $("grandTotal").textContent = money(totals.total ?? o.total ?? 0);
+          $("subTotal").textContent  = money(totals.subtotal ?? o.subtotal ?? 0);
+          $("tax").textContent       = money(totals.tax ?? o.tax ?? 0);
+          $("discount").textContent  = money(totals.discount ?? o.discount ?? 0);
+
+          const method = o.payment?.method || o.paymentMethod || "—";
+          $("payment").textContent = String(method).toUpperCase();
+
+          // Items
+          const items = Array.isArray(o.items) ? o.items : [];
+          $("items").innerHTML = items.map(it => {
+            const nm = it.name || "Item";
+            const qty = Number(it.qty || 1);
+            const price = Number(it.price || 0);
+            const line = qty * price;
+            const note = (it.note || "").trim();
+            return `
+              <div class="item">
+                <div class="l">
+                  <div class="name">${escapeHtml(nm)}</div>
+                  <div class="meta">
+                    <span>Qty: ${qty}</span>
+                    <span>${money(price)} each</span>
+                    ${note ? `<span>• Note: ${escapeHtml(note)}</span>` : ``}
+                  </div>
+                </div>
+                <div class="r">${money(line)}</div>
+              </div>
+            `;
+          }).join("");
+
+          // Order-level note
+          const onote = (o.orderNote || o.kitchenNote || "").trim();
+          if(onote){
+            $("orderNote").style.display = "block";
+            $("orderNote").textContent = `Kitchen note: ${onote}`;
+          }else{
+            $("orderNote").style.display = "none";
+          }
+
+          // QR (must appear once paid / preparing)
+          // Your POS sets status=preparing on payment, so we show QR for preparing/completed (and even cancelled, optional)
+          const receiptUrl = `${location.origin}${location.pathname.replace(/customer\.html$/,'') }receipt.html?brandId=${encodeURIComponent(brandId)}&orderId=${encodeURIComponent(oid)}`;
+          $("qrMeta").textContent = `Order #${orderNo}`;
+          $("qrcode").innerHTML = "";
+          new QRCode($("qrcode"), {
+            text: receiptUrl,
+            width: 220,
+            height: 220,
+            correctLevel: QRCode.CorrectLevel.M
+          });
+          $("qrHint").textContent = "Scan to view your receipt";
+        });
+      });
+    }
+
+    function escapeHtml(s){
+      return String(s || "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // start
+    if(!brandId) showPairing();
+    else boot();
+  </script>
+</body>
+</html>
