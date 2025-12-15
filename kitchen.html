@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Luma — Kitchen</title>
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#f3f4f6;--panel:#ffffff;--panel-soft:#f9fafb;--ink:#111827;--muted:#6b7280;
+      --border:#e5e7eb;--accent:#2563eb;--accent-strong:#1d4ed8;--accent-soft:#dbeafe;
+      --danger:#ef4444;--ok:#16a34a;--warn:#f59e0b;--radius:18px;--shadow:0 18px 40px rgba(15,23,42,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Montserrat,system-ui;background:var(--bg);color:var(--ink)}
+    header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border)}
+    .hwrap{max-width:1200px;margin:0 auto;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .brand{display:flex;gap:10px;align-items:center}
+    .logo{width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:linear-gradient(135deg,var(--accent-soft),#fff);
+      display:grid;place-items:center;font-weight:900;color:var(--accent);overflow:hidden}
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .brand h1{font-size:16px;margin:0}
+    .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--border);background:var(--panel-soft);
+      padding:8px 10px;border-radius:999px;font-weight:800;font-size:12px;color:var(--muted)}
+    .dot{width:9px;height:9px;border-radius:50%}
+    .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--danger)}
+    .btn{border:1px solid var(--border);background:var(--panel-soft);padding:10px 12px;border-radius:14px;font-weight:900;cursor:pointer}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    main{max-width:1200px;margin:12px auto;padding:0 14px}
+    .cols{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
+    @media(max-width:900px){.cols{grid-template-columns:1fr}}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow)}
+    .card h2{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px}
+    .list{padding:12px}
+    .order{border:1px solid var(--border);background:var(--panel-soft);border-radius:16px;padding:12px;margin-bottom:10px}
+    .row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .oid{font-weight:900}
+    .muted{color:var(--muted);font-size:12px}
+    .items{margin-top:8px}
+    .it{display:flex;justify-content:space-between;font-size:13px;margin-top:6px}
+    .note{font-size:12px;color:#374151;background:#eef2ff;border:1px dashed #c7d2fe;border-radius:10px;padding:6px;margin-top:6px}
+    .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+    footer{text-align:center;color:var(--muted);font-weight:800;font-size:12px;margin:14px 0}
+  </style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <div class="brand">
+      <div class="logo" id="logoBox"><span id="logoFallback">L</span><img id="logoImg" style="display:none"/></div>
+      <div>
+        <h1 id="brandName">Kitchen</h1>
+        <div class="muted" id="brandIdLine">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="pill"><span class="dot warn"></span> Preparing</span>
+      <span class="pill"><span class="dot ok"></span> Completed</span>
+      <button class="btn" id="btnSetBrand">Set Brand</button>
+      <button class="btn" id="btnClear">Clear Completed</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="cols">
+    <div class="card">
+      <h2>Preparing Queue</h2>
+      <div class="list" id="prepList"></div>
+    </div>
+    <div class="card">
+      <h2>Recently Completed</h2>
+      <div class="list" id="doneList"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Powered by Luma</footer>
+
+<script type="module">
+  // ================== Firebase config (PASTE YOUR CREDENTIALS HERE) ==================
+  const firebaseConfig = {
+    apiKey:"AIzaSyA80bAAGPuyscnTVS-zwrxE9Jp3tPiS1gM",
+    authDomain:"events-339ce.firebaseapp.com",
+    projectId:"events-339ce",
+    storageBucket:"events-339ce.firebasestorage.app",
+    messagingSenderId:"175601544315",
+    appId:"1:175601544315:web:00c94b4affa972b3a286de"
+  };
+  // ================================================================================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const $ = (id)=>document.getElementById(id);
+
+  function money(n){return Number(n||0).toFixed(2)}
+  function fmt(ts){try{const d=ts?.toDate?ts.toDate():new Date(ts);return d.toLocaleTimeString()}catch(e){return "—"}}
+
+  function getBrandId(){ return localStorage.getItem("luma_brandId") || "" }
+  function setBrandId(id){ localStorage.setItem("luma_brandId", id) }
+
+  function renderOrder(o, id, isDone=false){
+    const d = document.createElement("div"); d.className="order";
+    d.innerHTML = `
+      <div class="row">
+        <div class="oid">#${o.orderNo || id.slice(-6).toUpperCase()}</div>
+        <div class="muted">${fmt(o.createdAt || o.timestamps?.createdAt)}</div>
+      </div>
+      <div class="items"></div>
+      ${o.orderNote?`<div class="note">Kitchen note: ${o.orderNote}</div>`:""}
+      <div class="actions">
+        ${!isDone?`<button class="btn primary">Mark Completed</button>`:""}
+        <span class="pill"><span class="dot ${isDone?'ok':'warn'}"></span>${o.status}</span>
+      </div>
+    `;
+    const itemsEl = d.querySelector(".items");
+    (o.items||[]).forEach(it=>{
+      const r=document.createElement("div");
+      r.className="it";
+      r.innerHTML=`<div>${it.qty}× ${it.name}${it.note?` <span class='muted'>(${it.note})</span>`:""}</div><div>${money(it.qty*it.price)}</div>`;
+      itemsEl.appendChild(r);
+    });
+    if(!isDone){
+      d.querySelector("button").onclick = async ()=>{
+        await updateDoc(doc(db, `brands/${getBrandId()}/orders/${id}`),{
+          status:"completed", completedAt:serverTimestamp(), updatedAt:serverTimestamp()
+        });
+      };
+    }
+    return d;
+  }
+
+  let unsubPrep=null, unsubDone=null;
+  function subscribe(){
+    const brandId = getBrandId();
+    if(!brandId) return;
+    $("brandIdLine").textContent = brandId;
+    const qPrep = query(collection(db, `brands/${brandId}/orders`), where("status","==","preparing"), orderBy("createdAt","asc"));
+    const qDone = query(collection(db, `brands/${brandId}/orders`), where("status","==","completed"), orderBy("completedAt","desc"));
+    unsubPrep = onSnapshot(qPrep, snap=>{
+      const el=$("prepList"); el.innerHTML="";
+      snap.forEach(s=> el.appendChild(renderOrder(s.data(), s.id, false)));
+      if(!snap.size) el.innerHTML="<div class='muted'>No preparing orders</div>";
+    });
+    unsubDone = onSnapshot(qDone, snap=>{
+      const el=$("doneList"); el.innerHTML="";
+      snap.forEach(s=> el.appendChild(renderOrder(s.data(), s.id, true)));
+      if(!snap.size) el.innerHTML="<div class='muted'>No completed orders</div>";
+    });
+  }
+
+  $("btnSetBrand").onclick = ()=>{
+    const id = prompt("Enter brandId");
+    if(id){ setBrandId(id); location.reload(); }
+  };
+  $("btnClear").onclick = ()=> $("doneList").innerHTML="";
+
+  subscribe();
+</script>
+</body>
+</html>
