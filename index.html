@@ -929,7 +929,8 @@ body{background:var(--bg)!important;}
 
   
 <div class="footer">Powered by Luma</div>
-<!-- Chart.js (REQUIRED for dashboard charts) -->
+
+<!-- Chart.js (required for charts) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script type="module">
@@ -1272,6 +1273,7 @@ const $ = (id)=>{
       document.getElementById("authCard")?.classList.remove("hidden");
       const appView = document.getElementById("app-view");
       if(appView){ appView.style.display = "none"; }
+      document.getElementById("app")?.classList.add("hidden");
 
       showAuthTab("login");
       const lastEmail = localStorage.getItem(LS_KEYS.lastEmail);
@@ -1310,6 +1312,7 @@ const $ = (id)=>{
     document.getElementById("authCard")?.classList.add("hidden");
     const appView = document.getElementById("app-view");
     if(appView){ appView.style.display = "flex"; }
+    document.getElementById("app")?.classList.remove("hidden");
 
     // Header names
     const sbn = document.getElementById("sidebar-brand-name");
