@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Luma — POS</title>
   <link rel="icon" href="data:,">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     :root{
       --bg:#f3f4f6;
@@ -19,552 +15,288 @@
       --muted:#6b7280;
       --border:#e5e7eb;
       --accent:#2563eb;
-      --accent-soft:#dbeafe;
       --accent-strong:#1d4ed8;
-      --radius:16px;
-      --shadow:0 18px 40px rgba(15,23,42,.12);
+      --accent-soft:#dbeafe;
       --danger:#ef4444;
       --ok:#16a34a;
       --warn:#f59e0b;
+      --radius:16px;
+      --shadow:0 18px 40px rgba(15,23,42,.12);
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--ink);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
-    a{color:inherit}
-    .wrap{max-width:1400px;margin:0 auto;padding:18px}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Montserrat,system-ui,Segoe UI,Arial;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:1200px;margin:18px auto;padding:0 14px}
     .topbar{
-      display:flex;align-items:center;justify-content:space-between;
-      gap:14px;padding:14px 16px;border:1px solid var(--border);
-      background:var(--panel);border-radius:18px;box-shadow:var(--shadow);
-      position:sticky;top:12px;z-index:10;
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      background:var(--panel);border:1px solid var(--border);border-radius:20px;
+      padding:12px 12px;box-shadow:var(--shadow)
     }
     .brand{
-      display:flex;align-items:center;gap:12px;
-      min-width:280px;
+      display:flex;align-items:center;gap:10px;min-width:240px
     }
     .logo{
-      width:40px;height:40px;border-radius:12px;
-      background:linear-gradient(135deg,var(--accent),var(--accent-strong));
-      display:grid;place-items:center;color:#fff;font-weight:800;
-      overflow:hidden;border:1px solid rgba(255,255,255,.25);
+      width:44px;height:44px;border-radius:14px;border:1px solid var(--border);
+      background:linear-gradient(135deg,var(--accent-soft),#fff);
+      display:grid;place-items:center;font-weight:900;color:var(--accent)
     }
-    .logo img{width:100%;height:100%;object-fit:cover}
-    .brand h1{font-size:16px;line-height:1.1}
+    .brand h1{font-size:16px;margin:0}
     .brand .sub{font-size:12px;color:var(--muted);margin-top:2px}
-    .pill{
-      font-size:12px;padding:7px 10px;border-radius:999px;border:1px solid var(--border);
-      background:var(--panel-soft);color:var(--muted);display:inline-flex;gap:8px;align-items:center;
-      white-space:nowrap;
+    .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{
+      border:1px solid var(--border);background:var(--panel-soft);color:var(--ink);
+      padding:10px 12px;border-radius:14px;font-weight:800;cursor:pointer;
+      display:inline-flex;gap:8px;align-items:center;
     }
-    .dot{width:8px;height:8px;border-radius:99px;background:var(--muted)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .btn.danger{background:#fff;border-color:#fecaca;color:#b91c1c}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .pill{
+      display:flex;align-items:center;gap:8px;
+      border:1px solid var(--border);background:var(--panel-soft);
+      padding:8px 10px;border-radius:999px;font-weight:800;font-size:12px;color:var(--muted)
+    }
+    .dot{width:9px;height:9px;border-radius:50%}
     .dot.ok{background:var(--ok)}
     .dot.warn{background:var(--warn)}
-    .dot.bad{background:var(--danger)}
-    .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .btn{
-      appearance:none;border:1px solid var(--border);background:var(--panel);
-      padding:10px 12px;border-radius:12px;cursor:pointer;
-      font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px;
-      transition:.15s transform,.15s background,.15s border-color;
-    }
-    .btn:hover{transform:translateY(-1px);border-color:#d1d5db}
-    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-    .btn.primary:hover{background:var(--accent-strong);border-color:var(--accent-strong)}
-    .btn.danger{background:#fff;border-color:#fecaca;color:#b91c1c}
-    .btn.ghost{background:transparent}
-    .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-    .miniBtn{
-      padding:8px 10px;
-      border-radius:12px;
-      font-size:12px;
-      font-weight:800;
-      border:1px solid var(--border);
-      background:var(--panel-soft);
-      cursor:pointer;
-      white-space:nowrap;
-    }
-    .miniBtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-    .miniBtn.danger{background:#fff;border-color:#fecaca;color:#b91c1c}
-    .miniBtn:hover{border-color:#d1d5db}
-    .rActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    @media (max-width: 520px){
-      .rActions{flex-direction:column;align-items:stretch}
-      .rActions .miniBtn{width:100%}
-    }
-
     .grid{
-      display:grid;grid-template-columns: 1.6fr .9fr;
-      gap:16px;margin-top:16px;
-      align-items:start;
+      display:grid;grid-template-columns:1.3fr .9fr;gap:14px;margin-top:14px
     }
-    @media (max-width: 1100px){
+    @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
       .brand{min-width:auto}
-      .topbar{position:relative;top:auto}
     }
-
     .card{
-      border:1px solid var(--border);
-      background:var(--panel);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
+      background:var(--panel);border:1px solid var(--border);border-radius:20px;
+      box-shadow:var(--shadow);overflow:hidden
     }
-    .card-h{
-      padding:14px 16px;
-      border-bottom:1px solid var(--border);
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    .card-h{padding:14px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .card-h h2{margin:0;font-size:14px}
+    .mini{color:var(--muted);font-size:12px;margin-top:4px}
+    .card-b{padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .field{flex:1;min-width:180px}
+    label{display:block;font-size:12px;color:var(--muted);font-weight:800;margin:0 0 6px}
+    .input, textarea, select{
+      width:100%;padding:12px 12px;border-radius:14px;border:1px solid var(--border);
+      background:var(--panel-soft);font-weight:700;font-family:inherit;outline:none
     }
-    .card-h h2{font-size:14px}
-    .card-h .mini{font-size:12px;color:var(--muted)}
-    .card-b{padding:14px 16px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .field{
-      display:flex;flex-direction:column;gap:6px;
-      min-width:180px;flex:1;
-    }
-    .field label{font-size:12px;color:var(--muted);font-weight:600}
-    .input, .select, textarea{
-      width:100%;
-      padding:11px 12px;border-radius:12px;
-      border:1px solid var(--border);background:#fff;
-      font:inherit;font-size:13px;
-      outline:none;
-    }
-    textarea{min-height:74px;resize:vertical}
-    .hint{font-size:12px;color:var(--muted)}
-    .chips{display:flex;gap:8px;flex-wrap:wrap}
-    .chip{
-      padding:8px 10px;border-radius:999px;border:1px solid var(--border);
-      background:var(--panel-soft);font-size:12px;font-weight:700;cursor:pointer;
-    }
-    .chip.active{background:var(--accent-soft);border-color:#bfdbfe;color:var(--accent-strong)}
+    textarea{min-height:80px;resize:vertical}
     .products{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:12px;margin-top:12px;
+      display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px
     }
-    @media (max-width: 1100px){ .products{grid-template-columns:repeat(3,minmax(0,1fr));} }
-    @media (max-width: 760px){ .products{grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media (max-width: 980px){ .products{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 520px){ .products{grid-template-columns:1fr} }
     .p{
-      border:1px solid var(--border);border-radius:16px;
-      background:linear-gradient(180deg,#fff, var(--panel-soft));
-      overflow:hidden;cursor:pointer;
-      transition:.12s transform,.12s border-color;
-      display:flex;flex-direction:column;min-height:150px;
+      border:1px solid var(--border);background:var(--panel-soft);border-radius:16px;
+      padding:10px;cursor:pointer;display:flex;gap:10px;align-items:center
     }
-    .p:hover{transform:translateY(-1px);border-color:#d1d5db}
-    .pimg{height:86px;background:#eef2ff;display:grid;place-items:center;overflow:hidden}
+    .p:hover{border-color:#d1d5db}
+    .pimg{width:46px;height:46px;border-radius:14px;border:1px solid var(--border);background:#fff;overflow:hidden;display:grid;place-items:center}
     .pimg img{width:100%;height:100%;object-fit:cover}
-    .pmeta{padding:10px 10px 12px}
-    .pname{font-weight:800;font-size:13px}
-    .pcat{font-size:12px;color:var(--muted);margin-top:2px}
-    .pprice{margin-top:8px;font-weight:900}
-    .empty{
-      padding:20px;border:1px dashed var(--border);border-radius:16px;
-      background:var(--panel-soft);color:var(--muted);
-      text-align:center;
-    }
-
-    .cartlist{display:flex;flex-direction:column;gap:10px}
+    .pname{font-weight:900;font-size:13px}
+    .pcat{font-size:11px;color:var(--muted);margin-top:2px}
+    .pprice{font-weight:900;font-size:12px;color:var(--accent);margin-top:6px}
     .line{
-      border:1px solid var(--border);border-radius:16px;background:#fff;
-      padding:10px;
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap:10px;
+      display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
+      border:1px solid var(--border);background:var(--panel-soft);border-radius:16px;padding:10px;margin-top:10px
     }
-    .line .title{font-weight:800;font-size:13px}
-    .line .sub{font-size:12px;color:var(--muted);margin-top:2px}
-    .qty{
-      display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap;
-    }
+    .qty{display:flex;gap:8px;align-items:center}
     .qty button{
       width:34px;height:34px;border-radius:12px;border:1px solid var(--border);
-      background:var(--panel-soft);cursor:pointer;font-weight:900;
+      background:#fff;font-weight:900;cursor:pointer
     }
-    .qty .n{min-width:22px;text-align:center;font-weight:900}
-    .line textarea{min-height:54px}
-    .totals{
-      border-top:1px solid var(--border);
-      margin-top:12px;padding-top:12px;
-      display:flex;flex-direction:column;gap:8px;
-      font-size:13px;
-    }
-    .totrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .totrow strong{font-weight:900}
-    .bigpay{
-      margin-top:12px;
-      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
-    }
-    .paymethods{display:flex;gap:8px;flex-wrap:wrap}
-    .pm{
-      padding:9px 10px;border-radius:999px;border:1px solid var(--border);
-      background:var(--panel-soft);font-weight:800;font-size:12px;cursor:pointer;
-    }
-    .pm.active{background:var(--accent-soft);border-color:#bfdbfe;color:var(--accent-strong)}
-    .toast{
-      position:fixed;right:16px;bottom:16px;z-index:100;
-      min-width:280px;max-width:420px;
-      background:#0b1220;color:#fff;
-      border-radius:16px;padding:12px 14px;
-      box-shadow:0 20px 60px rgba(0,0,0,.25);
-      display:none;
-    }
-    .toast .t{font-weight:900}
-    .toast .m{font-size:12px;opacity:.85;margin-top:2px}
+    .qty .n{min-width:26px;text-align:center;font-weight:900}
+    .muted{color:var(--muted);font-size:12px}
+    .totals{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+    .totrow{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-weight:800}
     .drawer{
-      position:fixed;inset:0;z-index:50;display:none;
-      background:rgba(15,23,42,.55);
-      align-items:flex-end;justify-content:center;
-      padding:16px;
+      position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center;padding:14px;z-index:50
     }
     .sheet{
-      width:min(860px, 100%);
-      background:var(--panel);
-      border-radius:20px;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      max-height:88vh;
-      display:flex;flex-direction:column;
+      width:min(920px, 100%);
+      max-height:86vh;overflow:auto;background:var(--panel);border-radius:22px;border:1px solid var(--border);
+      box-shadow:var(--shadow)
     }
-    .sheet .sh{
-      padding:14px 16px;border-bottom:1px solid var(--border);
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    .sh{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .sh h3{margin:0;font-size:14px}
+    .sb{padding:14px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      padding:8px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel-soft);
+      font-weight:900;font-size:12px;cursor:pointer
     }
-    .sheet .sh h3{font-size:14px}
-    .sheet .sb{padding:14px 16px;overflow:auto}
-    .footer{
-      margin:16px auto 4px;
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .footer b{color:var(--ink)}
-    .hidden{display:none !important}
-    code{background:var(--panel-soft);border:1px solid var(--border);padding:2px 6px;border-radius:9px;font-size:12px}
+    .chip.active{background:var(--accent-soft);border-color:#bfdbfe}
+    .pm{padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:var(--panel-soft);font-weight:900;cursor:pointer}
+    .pm.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .paymethods{display:flex;gap:8px;flex-wrap:wrap}
+    .hidden{display:none!important}
+    .toast{position:fixed;right:14px;bottom:14px;z-index:60;display:none}
+    .tcard{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:12px 14px;min-width:260px}
+    .tcard b{display:block}
+    footer{margin:16px 0 10px;text-align:center;color:var(--muted);font-weight:800;font-size:12px}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
   </style>
 </head>
 <body>
   <div class="wrap">
-
-    <!-- TOP BAR -->
     <div class="topbar">
       <div class="brand">
-        <div class="logo" id="brandLogoBox"><span>LU</span></div>
+        <div class="logo" id="brandLogoBox">L</div>
         <div>
-          <h1>POS</h1>
+          <h1 id="brandTitle">POS</h1>
           <div class="sub" id="brandSub">Not signed in</div>
         </div>
       </div>
-
-      <div class="pill" id="authPill"><span class="dot warn"></span><span id="authPillText">Offline / Not ready</span></div>
-
       <div class="actions">
-        <button class="btn" id="btnOpenProducts">Products</button>
-        <button class="btn" id="btnOpenSettings">Settings</button>
-        <button class="btn" id="btnOpenRecent">Recent orders</button>
-        <button class="btn ghost" id="btnSignOut">Sign out</button>
+        <div class="pill"><span class="dot warn" id="pillDot"></span><span id="pillText">Not signed in</span></div>
+        <button class="btn" id="btnOpenAuth">Login</button>
+        <button class="btn" id="btnOpenSettings" disabled>Settings</button>
+        <button class="btn" id="btnOpenProducts" disabled>Products</button>
+        <button class="btn" id="btnOpenOrders" disabled>Orders</button>
+        <button class="btn danger" id="btnSignOut" disabled>Sign out</button>
       </div>
     </div>
 
-    <!-- AUTH GATE -->
-    <div class="card" id="authCard" style="margin-top:16px;">
-      <div class="card-h">
-        <div>
-          <h2>Sign in to POS</h2>
-          <div class="mini">Use owner (email/password) or staff (username + PIN). Everything is under <code>brands/{brandId}</code>.</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">
+          <div>
+            <h2>Menu</h2>
+            <div class="mini">Search & tap a product to add. Categories auto-detected.</div>
+          </div>
+          <div style="min-width:260px">
+            <label>Search</label>
+            <input class="input" id="q" placeholder="e.g. burger, fries…" />
+          </div>
         </div>
-        <button class="btn primary" id="btnOpenAuth">Open login</button>
+        <div class="card-b">
+          <div class="row">
+            <div class="field" style="min-width:220px;flex:1.2">
+              <label>Category</label>
+              <select id="cat" class="input"><option value="">All</option></select>
+            </div>
+            <div class="field" style="min-width:220px">
+              <label>Charges (from settings)</label>
+              <div class="pill" style="height:44px">
+                <span class="dot ok"></span>
+                <span><b>Tax</b>: <span id="taxRateLabel">0%</span> • <b>Service</b>: <span id="serviceRateLabel">0%</span></span>
+              </div>
+            </div>
+            <div class="field" style="min-width:180px">
+              <label>Discount (%)</label>
+              <input class="input" id="discount" placeholder="0" inputmode="decimal"/>
+            </div>
+          </div>
+          <div class="products" id="productsGrid"></div>
+          <div class="mini" id="productsHint" style="margin-top:10px">Sign in to load products.</div>
+        </div>
       </div>
-      <div class="card-b">
+
+      <div class="card">
+        <div class="card-h">
+          <div>
+            <h2>Cart</h2>
+            <div class="mini" id="cartMeta">0 items</div>
+          </div>
+          <div class="row" style="justify-content:flex-end">
+            <button class="btn" id="btnClear" disabled>Clear</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <div id="cartLines"></div>
+          <div class="muted" id="cartEmpty" style="margin-top:6px">Cart is empty.</div>
+
+          <div class="totals">
+            <div class="totrow"><span>Subtotal</span><strong id="tSubtotal">0.00</strong></div>
+            <div class="totrow"><span>Discount</span><strong id="tDiscount">0.00</strong></div>
+            <div class="totrow"><span>Service</span><strong id="tService">0.00</strong></div>
+            <div class="totrow"><span>Tax</span><strong id="tTax">0.00</strong></div>
+            <div class="totrow" style="font-size:16px"><span>Total</span><strong id="tTotal">0.00</strong></div>
+          </div>
+
+          <div class="row" style="margin-top:12px;justify-content:flex-end;gap:10px">
+            <button class="btn primary" id="btnPay" disabled>Checkout</button>
+          </div>
+
+          <div class="mini" id="afterPayHint" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Powered by Luma</footer>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="drawer" id="authDrawer">
+    <div class="sheet">
+      <div class="sh">
+        <h3>Login</h3>
+        <button class="btn" id="btnCloseAuth">Close</button>
+      </div>
+      <div class="sb">
         <div class="row">
           <div class="field" style="min-width:260px;flex:1.2">
             <label>Brand ID</label>
             <input class="input" id="brandId" placeholder="e.g. oudies" autocomplete="off"/>
-            <div class="hint">No URL params. Brand context is selected here then stored locally.</div>
-          </div>
-          <div class="field" style="min-width:240px">
-            <label>Status</label>
-            <div class="pill" style="height:44px;align-items:center;justify-content:flex-start">
-              <span class="dot warn"></span><span id="authMsgInline">Not signed in</span>
-            </div>
+            <div class="mini">Saved locally (no URL params).</div>
           </div>
         </div>
 
-        <div class="hint" style="margin-top:10px">
-          If staff login fails, make sure the staff user is <b>active</b> and PIN matches the dashboard’s hashing method.
+        <div class="chips" id="authTabs" style="margin-top:10px">
+          <div class="chip active" data-tab="owner">Owner</div>
+          <div class="chip" data-tab="staff">Staff</div>
         </div>
-      </div>
-    </div>
 
-    <!-- AUTH MODAL -->
-    <div class="drawer" id="authDrawer">
-      <div class="sheet">
-        <div class="sh">
-          <h3>Login</h3>
-          <button class="btn" id="btnCloseAuth">Close</button>
-        </div>
-        <div class="sb">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <div class="chips" id="authTabs">
-              <div class="chip active" data-tab="owner">Owner</div>
-              <div class="chip" data-tab="staff">Staff</div>
-            </div>
-            <div class="hint">Brand: <code id="brandCode">—</code></div>
-          </div>
-
-          <!-- OWNER -->
-          <div id="tabOwner" style="margin-top:12px">
-            <div class="card">
-              <div class="card-h"><h2>Owner login</h2><div class="mini">Firebase Auth (email + password)</div></div>
-              <div class="card-b">
-                <div class="row">
-                  <div class="field">
-                    <label>Email</label>
-                    <input class="input" id="email" placeholder="you@company.com" autocomplete="email"/>
-                  </div>
-                  <div class="field">
-                    <label>Password</label>
-                    <input class="input" id="password" type="password" placeholder="••••••••" autocomplete="current-password"/>
-                  </div>
+        <div id="tabOwner" style="margin-top:12px">
+          <div class="card">
+            <div class="card-h"><div><h2>Owner login</h2><div class="mini">Firebase Auth (email + password)</div></div></div>
+            <div class="card-b">
+              <div class="row">
+                <div class="field">
+                  <label>Email</label>
+                  <input class="input" id="email" placeholder="you@company.com" autocomplete="email"/>
                 </div>
-                <div class="row" style="margin-top:10px;justify-content:flex-end">
-                  <button class="btn" id="btnRegister">Register</button>
-                  <button class="btn primary" id="btnLogin">Sign in</button>
+                <div class="field">
+                  <label>Password</label>
+                  <input class="input" id="password" type="password" placeholder="••••••••" autocomplete="current-password"/>
                 </div>
-                <div class="hint" id="authMsg" style="margin-top:10px"></div>
               </div>
+              <div class="row" style="margin-top:10px;justify-content:flex-end;gap:10px">
+                <button class="btn" id="btnRegister">Register</button>
+                <button class="btn primary" id="btnLogin">Sign in</button>
+              </div>
+              <div class="mini" id="authMsg" style="margin-top:10px"></div>
             </div>
           </div>
+        </div>
 
-          <!-- STAFF -->
-          <div id="tabStaff" class="hidden" style="margin-top:12px">
-            <div class="card">
-              <div class="card-h"><h2>Staff login</h2><div class="mini">Username + PIN (from Vendor Dashboard → Staff)</div></div>
-              <div class="card-b">
-                <div class="row">
-                  <div class="field">
-                    <label>Username</label>
-                    <input class="input" id="staffUser" placeholder="e.g. cashier1" autocomplete="off"/>
-                  </div>
-                  <div class="field">
-                    <label>PIN</label>
-                    <input class="input" id="staffPin" placeholder="4-6 digits" inputmode="numeric" autocomplete="off"/>
-                  </div>
+        <div id="tabStaff" class="hidden" style="margin-top:12px">
+          <div class="card">
+            <div class="card-h"><div><h2>Staff login</h2><div class="mini">Username + PIN (from Vendor Dashboard → Staff)</div></div></div>
+            <div class="card-b">
+              <div class="row">
+                <div class="field">
+                  <label>Username</label>
+                  <input class="input" id="staffUser" placeholder="e.g. cashier1" autocomplete="off"/>
                 </div>
-                <div class="row" style="margin-top:10px;justify-content:flex-end">
-                  <button class="btn primary" id="btnStaffLogin">Enter POS</button>
+                <div class="field">
+                  <label>PIN</label>
+                  <input class="input" id="staffPin" placeholder="4-6 digits" inputmode="numeric" autocomplete="off"/>
                 </div>
-                <div class="hint" id="staffMsg" style="margin-top:10px"></div>
               </div>
-            </div>
-          </div>
-
-          <div class="hint" style="margin-top:12px">
-            Tip: You can keep this POS open on a cashier tablet. Products and orders sync live.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- APP --><!-- APP -->
-    <div id="app" class="hidden">
-      <div class="grid">
-
-        <!-- PRODUCTS -->
-        <div class="card">
-          <div class="card-h">
-            <div>
-              <h2>Menu</h2>
-              <div class="mini" id="menuMeta">0 products</div>
-            </div>
-            <div class="row" style="justify-content:flex-end">
-              <input class="input" id="search" placeholder="Search products…" style="max-width:280px"/>
-            </div>
-          </div>
-          <div class="card-b">
-            <div class="chips" id="catChips"></div>
-            <div id="products" class="products"></div>
-            <div id="prodEmpty" class="empty hidden">No products yet. Add some in <b>Products</b>.</div>
-          </div>
-        </div>
-
-        <!-- CART -->
-        <div class="card">
-          <div class="card-h">
-            <div>
-              <h2>Cart</h2>
-              <div class="mini" id="cartMeta">0 items</div>
-            </div>
-            <button class="btn" id="btnClearCart">Clear</button>
-          </div>
-          <div class="card-b">
-            <div class="cartlist" id="cart"></div>
-            <div id="cartEmpty" class="empty">Tap items from the menu to add them here.</div>
-
-            <div class="row" style="margin-top:12px">
-              <div class="field" style="min-width:160px">
-                <label>Discount (%)</label>
-                <input class="input" id="discount" placeholder="0" inputmode="decimal"/>
+              <div class="row" style="margin-top:10px;justify-content:flex-end">
+                <button class="btn primary" id="btnStaffLogin">Enter POS</button>
               </div>
-              <div class="field" style="min-width:200px">
-                <label>Charges (from settings)</label>
-                <div class="pill" style="height:44px;align-items:center;justify-content:flex-start">
-                  <span class="dot ok"></span>
-                  <span><b>Tax</b>: <span id="taxRateLabel">0%</span> • <b>Service</b>: <span id="serviceRateLabel">0%</span></span>
-                </div>
-                <div class="hint">Change these in <b>Settings</b>.</div>
-              </div>
-              <div class="field" style="min-width:220px;flex:1.4">
-                <label>Customer name (optional)</label>
-                <input class="input" id="customerName" placeholder="Walk-in"/>
-              </div>
+              <div class="mini" id="staffMsg" style="margin-top:10px"></div>
             </div>
-
-            <!-- hidden (kept for compatibility with calc function variables) -->
-            <input class="hidden" id="tax" value="0"/>
-            <input class="hidden" id="service" value="0"/>
-
-            <div class="field" style="margin-top:10px">
-              <label>Kitchen note (order-level)</label>
-              <textarea id="orderNote" placeholder="e.g. Serve hot, extra napkins…"></textarea>
-            </div>
-
-            <div class="totals">
-              <div class="totrow"><span>Subtotal</span><strong id="tSubtotal">0.00</strong></div>
-              <div class="totrow"><span>Discount</span><strong id="tDiscount">0.00</strong></div>
-              <div class="totrow"><span>Service</span><strong id="tService">0.00</strong></div>
-              <div class="totrow"><span>Tax</span><strong id="tTax">0.00</strong></div>
-              <div class="totrow" style="font-size:15px"><span>Total</span><strong id="tTotal">0.00</strong></div>
-            </div>
-
-            <div class="bigpay">
-              <div class="paymethods" id="payMethods">
-                <div class="pm active" data-m="cash">Cash</div>
-                <div class="pm" data-m="card">Card</div>
-                <div class="pm" data-m="wallet">Wallet</div>
-              </div>
-              <button class="btn primary" id="btnPay" disabled>Pay & Send to Kitchen</button>
-            </div>
-
-            <div class="hint" id="afterPayHint" style="margin-top:10px"></div>
           </div>
         </div>
 
-      </div>
-
-      <div class="footer">Powered by <b>Luma</b></div>
-    </div>
-
-  </div>
-
-  <!-- PRODUCTS DRAWER -->
-  <div class="drawer" id="productsDrawer">
-    <div class="sheet">
-      <div class="sh">
-        <h3>Products manager</h3>
-        <button class="btn" id="btnCloseProducts">Close</button>
-      </div>
-      <div class="sb">
-        <div class="row">
-          <div class="field">
-            <label>Name</label>
-            <input class="input" id="pName" placeholder="e.g. Burger"/>
-          </div>
-          <div class="field">
-            <label>Category</label>
-            <input class="input" id="pCat" placeholder="e.g. Sandwiches"/>
-          </div>
-          <div class="field">
-            <label>Price</label>
-            <input class="input" id="pPrice" placeholder="0" inputmode="decimal"/>
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <div class="field" style="flex:1.3">
-            <label>Description (optional)</label>
-            <input class="input" id="pDesc" placeholder="Short description"/>
-          </div>
-          <div class="field">
-            <label>Image (optional)</label>
-            <input class="input" id="pImg" type="file" accept="image/*"/>
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px;justify-content:flex-end">
-          <button class="btn" id="btnClearP">Clear</button>
-          <button class="btn primary" id="btnSaveP">Save product</button>
-        </div>
-
-        <div class="hr" style="height:1px;background:var(--border);margin:14px 0"></div>
-        <div class="hint" id="pmMsg"></div>
-        <div id="pmList" style="margin-top:12px"></div>
+        <div class="mini" style="margin-top:12px">Data paths: <code>brands/{brandId}/products</code>, <code>brands/{brandId}/orders</code></div>
       </div>
     </div>
   </div>
 
-  
-  <!-- SETTINGS DRAWER -->
-  <div class="drawer" id="settingsDrawer">
-    <div class="sheet">
-      <div class="sh">
-        <h3>POS Settings</h3>
-        <button class="btn" id="btnCloseSettings">Close</button>
-      </div>
-      <div class="sb">
-        <div class="card">
-          <div class="card-h">
-            <div>
-              <h2>Taxes & service</h2>
-              <div class="mini">Stored at <code>brands/{brandId}/settings/pos</code></div>
-            </div>
-          </div>
-          <div class="card-b">
-            <div class="row">
-              <div class="field">
-                <label>Tax rate (%)</label>
-                <input class="input" id="setTaxRate" placeholder="e.g. 14" inputmode="decimal"/>
-              </div>
-              <div class="field">
-                <label>Service rate (%)</label>
-                <input class="input" id="setServiceRate" placeholder="e.g. 12" inputmode="decimal"/>
-              </div>
-            </div>
-            <div class="row" style="margin-top:10px;justify-content:flex-end;gap:10px">
-              <button class="btn" id="btnResetSettings">Reset</button>
-              <button class="btn primary" id="btnSaveSettings">Save settings</button>
-            </div>
-            <div class="hint" id="settingsMsg" style="margin-top:10px"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-<!-- RECENT ORDERS DRAWER -->
-  <div class="drawer" id="recentDrawer">
-    <div class="sheet">
-      <div class="sh">
-        <h3>Recent orders</h3>
-        <button class="btn" id="btnCloseRecent">Close</button>
-      </div>
-      <div class="sb">
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <div class="hint">Quick operations: cancel / refund / open receipt.</div>
-          <button class="btn" id="btnRefreshRecent">Refresh</button>
-        </div>
-        <div id="recentList" style="margin-top:12px"></div>
-      </div>
-    </div>
-  </div>
-
-  
   <!-- CHECKOUT MODAL -->
   <div class="drawer" id="checkoutDrawer">
     <div class="sheet">
@@ -582,6 +314,7 @@
           </div>
           <div class="card-b">
             <div id="coLines"></div>
+
             <div class="totals" style="margin-top:12px">
               <div class="totrow"><span>Subtotal</span><strong id="coSubtotal">0.00</strong></div>
               <div class="totrow"><span>Discount</span><strong id="coDiscount">0.00</strong></div>
@@ -600,24 +333,115 @@
                 </div>
               </div>
               <div class="field">
-                <label>Customer (optional)</label>
+                <label>Customer name (optional)</label>
                 <input class="input" id="coCustomer" placeholder="Walk-in"/>
               </div>
             </div>
 
             <div class="field" style="margin-top:10px">
               <label>Kitchen note (order-level)</label>
-              <textarea id="coOrderNote" placeholder="e.g. extra napkins…"></textarea>
+              <textarea id="coOrderNote" placeholder="e.g. extra napkins, no ice…"></textarea>
             </div>
 
             <div class="row" style="margin-top:12px;justify-content:flex-end;gap:10px">
-              <button class="btn" id="btnEditCart">Back to cart</button>
+              <button class="btn" id="btnEditCart">Back</button>
               <button class="btn primary" id="btnConfirmPay">Confirm payment</button>
             </div>
-
-            <div class="hint" id="coHint" style="margin-top:10px"></div>
+            <div class="mini" id="coHint" style="margin-top:10px"></div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS MANAGER MODAL -->
+  <div class="drawer" id="productsDrawer">
+    <div class="sheet">
+      <div class="sh">
+        <h3>Products</h3>
+        <button class="btn" id="btnCloseProducts">Close</button>
+      </div>
+      <div class="sb">
+        <div class="card">
+          <div class="card-h"><div><h2>Add product</h2><div class="mini">Upload image to Storage and save URL.</div></div></div>
+          <div class="card-b">
+            <div class="row">
+              <div class="field"><label>Name</label><input class="input" id="pName" placeholder="e.g. Cheeseburger"/></div>
+              <div class="field"><label>Category</label><input class="input" id="pCat" placeholder="e.g. Burgers"/></div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <div class="field"><label>Price (EGP)</label><input class="input" id="pPrice" placeholder="0" inputmode="decimal"/></div>
+              <div class="field"><label>Image (optional)</label><input class="input" id="pImg" type="file" accept="image/*"/></div>
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label>Description (optional)</label>
+              <textarea id="pDesc" placeholder="Short description…"></textarea>
+            </div>
+            <div class="row" style="margin-top:12px;justify-content:flex-end;gap:10px">
+              <button class="btn" id="btnResetProduct">Reset</button>
+              <button class="btn primary" id="btnAddProduct">Add product</button>
+            </div>
+            <div class="mini" id="prodMsg" style="margin-top:10px"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="card-h"><div><h2>Existing products</h2><div class="mini">Tap a product to quick-add to cart (POS uses the live menu too).</div></div></div>
+          <div class="card-b">
+            <div id="prodListMini"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="drawer" id="settingsDrawer">
+    <div class="sheet">
+      <div class="sh">
+        <h3>POS Settings</h3>
+        <button class="btn" id="btnCloseSettings">Close</button>
+      </div>
+      <div class="sb">
+        <div class="card">
+          <div class="card-h"><div><h2>Taxes & service</h2><div class="mini">Saved at <code>brands/{brandId}/settings/pos</code></div></div></div>
+          <div class="card-b">
+            <div class="row">
+              <div class="field"><label>Tax rate (%)</label><input class="input" id="setTaxRate" placeholder="e.g. 14" inputmode="decimal"/></div>
+              <div class="field"><label>Service rate (%)</label><input class="input" id="setServiceRate" placeholder="e.g. 12" inputmode="decimal"/></div>
+            </div>
+            <div class="row" style="margin-top:12px;justify-content:flex-end;gap:10px">
+              <button class="btn" id="btnResetSettings">Reset</button>
+              <button class="btn primary" id="btnSaveSettings">Save</button>
+            </div>
+            <div class="mini" id="settingsMsg" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS MODAL -->
+  <div class="drawer" id="ordersDrawer">
+    <div class="sheet">
+      <div class="sh">
+        <h3>Orders</h3>
+        <button class="btn" id="btnCloseOrders">Close</button>
+      </div>
+      <div class="sb">
+        <div class="row">
+          <div class="field" style="min-width:220px">
+            <label>Status filter</label>
+            <select id="ordStatus" class="input">
+              <option value="">All</option>
+              <option value="preparing">Preparing</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div id="ordersList" style="margin-top:10px"></div>
+        <div class="mini" id="ordersMsg" style="margin-top:10px"></div>
       </div>
     </div>
   </div>
@@ -630,9 +454,9 @@
         <button class="btn" id="btnCloseRefund">Close</button>
       </div>
       <div class="sb">
-        <div class="hint" id="rfMeta">—</div>
+        <div class="mini" id="rfMeta">—</div>
 
-        <div class="row" style="margin-top:10px;gap:8px">
+        <div class="chips" style="margin-top:10px">
           <div class="chip active" id="rfModeFull">Full order</div>
           <div class="chip" id="rfModeItems">By items</div>
         </div>
@@ -644,300 +468,145 @@
           <button class="btn primary" id="btnConfirmRefund">Confirm refund</button>
         </div>
 
-        <div class="hint" id="rfHint" style="margin-top:10px"></div>
+        <div class="mini" id="rfHint" style="margin-top:10px"></div>
       </div>
     </div>
   </div>
-<div class="toast" id="toast">
-    <div class="t" id="toastT">Saved</div>
-    <div class="m" id="toastM">Done</div>
+
+  <div class="toast" id="toast">
+    <div class="tcard">
+      <b id="tTitle">Title</b>
+      <div class="muted" id="tBody">Body</div>
+    </div>
   </div>
 
-  <!-- Firebase (modular) -->
   <script type="module">
+    // ================== 1) Firebase config (PASTE YOUR CREDENTIALS HERE) ==================
+    const firebaseConfig = {
+      apiKey: "PASTE_HERE",
+      authDomain: "PASTE_HERE",
+      projectId: "PASTE_HERE",
+      storageBucket: "PASTE_HERE",
+      messagingSenderId: "PASTE_HERE",
+      appId: "PASTE_HERE"
+    };
+    // ======================================================================================
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-      getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, orderBy, limit,
-      getDocs, onSnapshot, serverTimestamp, runTransaction
+      getFirestore, doc, collection, addDoc, setDoc, getDoc, getDocs, updateDoc,
+      onSnapshot, serverTimestamp, query, where, orderBy, limit, runTransaction
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       getStorage, ref as sRef, uploadBytes, getDownloadURL
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-    // ✅ Same credentials block as your dashboard (index 15)
-    const firebaseConfig = {
-      apiKey:"AIzaSyA80bAAGPuyscnTVS-zwrxE9Jp2mY7UPG",
-      authDomain:"events-339ce.firebaseapp.com",
-      projectId:"events-339ce",
-      storageBucket:"events-339ce.firebasestorage.app",
-      messagingSenderId:"175601544315",
-      appId:"1:175601544315:web:00c94b4affa972b3a286de"
-    };
-
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
+    const auth = getAuth(app);
     const storage = getStorage(app);
 
-    // ---------- helpers ----------
-    const $ = (id)=>document.getElementById(id);
-    const money = (n)=> (Number(n||0)).toFixed(2);
-    const nowISO = ()=> new Date().toISOString();
-    function toast(t,m){
-      $("toastT").textContent = t;
-      $("toastM").textContent = m || "";
+    const $ = (id)=> document.getElementById(id);
+
+    // -------- UI helpers --------
+    function openDrawer(id, yes){ $(id).style.display = yes ? "flex" : "none"; }
+    ["authDrawer","checkoutDrawer","productsDrawer","settingsDrawer","ordersDrawer","refundDrawer"].forEach(id=>{
+      $(id).addEventListener("click", (e)=>{ if(e.target === $(id)) openDrawer(id,false); });
+    });
+
+    function toast(title, body=""){
+      $("tTitle").textContent = title;
+      $("tBody").textContent = body;
       $("toast").style.display = "block";
-      clearTimeout(window.__toastT);
-      window.__toastT = setTimeout(()=> $("toast").style.display="none", 2600);
+      clearTimeout(window.__tto);
+      window.__tto = setTimeout(()=> $("toast").style.display="none", 2600);
     }
-    function setPill(state, text){
-      const dot = $("authPill").querySelector(".dot");
-      dot.classList.remove("ok","warn","bad");
-      dot.classList.add(state);
-      $("authPillText").textContent = text;
-      const inline = document.getElementById("authMsgInline");
-      if(inline) inline.textContent = text;
+    function money(n){ return (Number(n||0)).toFixed(2); }
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, (m)=>({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
     }
-    function needBrandId(){
-      const bid = ($("brandId").value||"").trim();
-      if(!bid){ toast("Brand ID required","Enter a Brand ID first."); $("brandId").focus(); }
-      return bid;
-    }
+
+    // -------- State --------
+    let BRAND_ID = "";
+    let BRAND = null;
+    let ROLE = "guest";
+    let STAFF = null;
+
+    let PRODUCTS = [];
+    let CART = [];
+    let PAY_METHOD = "cash";
+    let POS_SETTINGS = { taxRate: 0, serviceRate: 0 };
+
+    let unsubProducts = null;
+    let unsubOrders = null;
+
     function basePaths(brandId){
       return {
         brandDoc: doc(db, `brands/${brandId}`),
         productsCol: collection(db, `brands/${brandId}/products`),
         ordersCol: collection(db, `brands/${brandId}/orders`),
         staffCol: collection(db, `brands/${brandId}/staff`),
-        runtimeCustomerDoc: doc(db, `brands/${brandId}/runtime/customerDisplay`),
         settingsPosDoc: doc(db, `brands/${brandId}/settings/pos`),
-        countersDoc: doc(db, `brands/${brandId}/counters/orders`)
+        countersDoc: doc(db, `brands/${brandId}/counters/orders`),
+        runtimeCustomerDoc: doc(db, `brands/${brandId}/runtime/customerDisplay`)
       };
     }
 
-    
-    async function sha256Hex(str){
-      const enc = new TextEncoder();
-      const data = enc.encode(String(str));
-      const hash = await crypto.subtle.digest("SHA-256", data);
-      return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
-    }
-// ---------- state ----------
-    let BRAND_ID = "";
-    let BRAND = null; // {name, logoUrl}
-    let ROLE = "owner"; // owner|cashier
-    let STAFF = null; // {username, role}
-    let PRODUCTS = []; // {id,name,category,price,imageUrl,desc}
-    let FILTER_CAT = "All";
-    let SEARCH = "";
-    let CART = []; // {productId,name,price,qty,note}
-    let PAY_METHOD = "cash";
-    let POS_SETTINGS = { taxRate: 0, serviceRate: 0 };
-
-    // ---------- UI: basics ----------
-    function showApp(yes){
-      $("authCard").classList.toggle("hidden", yes);
-      $("app").classList.toggle("hidden", !yes);
+    function setPill(kind, text){
+      $("pillText").textContent = text;
+      $("brandSub").textContent = text;
+      $("pillDot").className = "dot " + (kind==="ok" ? "ok" : "warn");
     }
 
-    function setBrandHeader(){
-      const sub = BRAND
-        ? `${BRAND.name || BRAND_ID} • ${ROLE}${STAFF?.username?` (${STAFF.username})`:``}`
-        : `Brand: ${BRAND_ID} • ${ROLE}${STAFF?.username?` (${STAFF.username})`:``}`;
-      $("brandSub").textContent = sub;
-
-      const box = $("brandLogoBox");
-      box.innerHTML = "";
-      if(BRAND?.logoUrl){
-        const img = document.createElement("img");
-        img.src = BRAND.logoUrl;
-        img.alt = "Brand";
-        box.appendChild(img);
-      }else{
-        const span = document.createElement("span");
-        span.textContent = "LU";
-        box.appendChild(span);
-      }
-    }
-
-function recalc(){
-  const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
-
-  const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
-  const discount = subtotal * (discountPct / 100);
-
-  const taxRate = Number($("tax").value || 0);
-  const serviceRate = Number($("service").value || 0);
-
-  const service = (subtotal - discount) * (serviceRate / 100);
-  const tax = (subtotal - discount + service) * (taxRate / 100);
-
-  const total = Math.max(0, subtotal - discount + service + tax);
-
-  $("tSubtotal").textContent = money(subtotal);
-  $("tDiscount").textContent = money(discount);
-  $("tService").textContent = money(service);
-  $("tTax").textContent = money(tax);
-  $("tTotal").textContent = money(total);
-
-  $("cartMeta").textContent =
-    CART.reduce((s,l)=>s + Number(l.qty||0),0) + " items";
-
-  const hasItems = CART.length > 0;
-  $("cartEmpty").classList.toggle("hidden", hasItems);
-  $("btnPay").disabled = !hasItems || total <= 0;
-}
-
-
-    function renderCart(){
-      const root = $("cart");
-      root.innerHTML = "";
-      for(const l of CART){
-        const el = document.createElement("div");
-        el.className = "line";
-        el.innerHTML = `
-          <div>
-            <div class="title">${escapeHtml(l.name)}</div>
-            <div class="sub">${money(l.price)} × <b>${l.qty}</b> = <b>${money(l.price*l.qty)}</b></div>
-            <div style="margin-top:8px">
-              <label style="font-size:12px;color:var(--muted);font-weight:600">Item note (optional)</label>
-              <textarea data-note="${l.productId}" placeholder="e.g. no onions">${escapeHtml(l.note||"")}</textarea>
-            </div>
-          </div>
-          <div class="qty">
-            <button data-dec="${l.productId}">−</button>
-            <div class="n">${l.qty}</div>
-            <button data-inc="${l.productId}">+</button>
-          </div>
-        `;
-        root.appendChild(el);
-      }
-
-      // handlers
-      root.querySelectorAll("button[data-inc]").forEach(b=>{
-        b.onclick = ()=>{
-          const id = b.getAttribute("data-inc");
-          const it = CART.find(x=>x.productId===id);
-          if(it){ it.qty++; renderCart(); }
-        };
-      });
-      root.querySelectorAll("button[data-dec]").forEach(b=>{
-        b.onclick = ()=>{
-          const id = b.getAttribute("data-dec");
-          const it = CART.find(x=>x.productId===id);
-          if(it){
-            it.qty--;
-            if(it.qty<=0) CART = CART.filter(x=>x.productId!==id);
-            renderCart();
-          }
-        };
-      });
-      root.querySelectorAll("textarea[data-note]").forEach(t=>{
-        t.oninput = ()=>{
-          const id = t.getAttribute("data-note");
-          const it = CART.find(x=>x.productId===id);
-          if(it) it.note = t.value;
-        };
-      });
-
-      recalc();
-    }
-
-    function addToCart(p){
-      const existing = CART.find(x=>x.productId===p.id);
-      if(existing) existing.qty++;
-      else CART.push({productId:p.id, name:p.name, price:Number(p.price||0), qty:1, note:""});
-      renderCart();
-    }
-
-    function renderChips(){
-      const cats = ["All", ...Array.from(new Set(PRODUCTS.map(p=>p.category||"Uncategorized")))];
-      const root = $("catChips");
-      root.innerHTML = "";
-      for(const c of cats){
-        const el = document.createElement("div");
-        el.className = "chip" + (FILTER_CAT===c ? " active":"");
-        el.textContent = c;
-        el.onclick = ()=>{ FILTER_CAT=c; renderProducts(); };
-        root.appendChild(el);
-      }
-    }
-
-    function renderProducts(){
-      const grid = $("products");
-      const empty = $("prodEmpty");
-      const q = (SEARCH||"").trim().toLowerCase();
-      grid.innerHTML = "";
-
-      let list = PRODUCTS.slice();
-      if(FILTER_CAT!=="All") list = list.filter(p=>(p.category||"Uncategorized")===FILTER_CAT);
-      if(q) list = list.filter(p=> (p.name||"").toLowerCase().includes(q) || (p.category||"").toLowerCase().includes(q));
-
-      $("menuMeta").textContent = `${list.length} products`;
-      empty.classList.toggle("hidden", PRODUCTS.length>0);
-
-      for(const p of list){
-        const el = document.createElement("div");
-        el.className = "p";
-        el.innerHTML = `
-          <div class="pimg">${p.imageUrl ? `<img src="${escapeAttr(p.imageUrl)}" alt="">` : `<div class="hint">No image</div>`}</div>
-          <div class="pmeta">
-            <div class="pname">${escapeHtml(p.name||"Unnamed")}</div>
-            <div class="pcat">${escapeHtml(p.category||"Uncategorized")}</div>
-            <div class="pprice">${money(p.price)} EGP</div>
-          </div>
-        `;
-        el.onclick = ()=> addToCart(p);
-        grid.appendChild(el);
-      }
-    }
-
-    function escapeHtml(s){ return String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
-    function escapeAttr(s){ return escapeHtml(s).replace(/"/g,"&quot;"); }
-
-    // ---------- Firestore: bootstrap + realtime ----------
-    let unsubProducts = null;
-
+    // -------- Ensure structure --------
     async function ensureBrandShell(brandId){
-      
-      const { brandDoc, runtimeCustomerDoc, settingsPosDoc, countersDoc } = basePaths(brandId);
+      const { brandDoc, settingsPosDoc, countersDoc, runtimeCustomerDoc } = basePaths(brandId);
 
-      const bSnap = await getDoc(brandDoc);
-      if(!bSnap.exists()){
+      const b = await getDoc(brandDoc);
+      if(!b.exists()){
         await setDoc(brandDoc, {
           name: brandId,
+          status: "active",
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
-        
-      const sSnap = await getDoc(settingsPosDoc);
-      if(!sSnap.exists()){
-        await setDoc(settingsPosDoc, { taxRate: 0, serviceRate: 0, updatedAt: serverTimestamp() }, { merge:true });
-      }
-
-      const cSnap = await getDoc(countersDoc);
-      if(!cSnap.exists()){
-        await setDoc(countersDoc, { nextOrderNo: 1000, updatedAt: serverTimestamp() }, { merge:true });
-      }
-
-    }, { merge:true });
+        }, { merge:true });
       }else{
         await updateDoc(brandDoc, { updatedAt: serverTimestamp() }).catch(()=>{});
       }
-      const rSnap = await getDoc(runtimeCustomerDoc);
-      if(!rSnap.exists()){
-        await setDoc(runtimeCustomerDoc, {
-          lastPaidOrderId: null,
-          lastPaidAt: null,
-          updatedAt: serverTimestamp()
-        }, { merge:true });
+
+      const s = await getDoc(settingsPosDoc);
+      if(!s.exists()){
+        await setDoc(settingsPosDoc, { taxRate: 0, serviceRate: 0, updatedAt: serverTimestamp() }, { merge:true });
+      }
+
+      const c = await getDoc(countersDoc);
+      if(!c.exists()){
+        await setDoc(countersDoc, { nextOrderNo: 1000, updatedAt: serverTimestamp() }, { merge:true });
+      }
+
+      const r = await getDoc(runtimeCustomerDoc);
+      if(!r.exists()){
+        await setDoc(runtimeCustomerDoc, { lastPaidOrderId: null, lastPaidAt: null, updatedAt: serverTimestamp() }, { merge:true });
       }
     }
 
     async function loadBrand(brandId){
       const { brandDoc } = basePaths(brandId);
+      const snap = await getDoc(brandDoc);
+      BRAND = snap.exists() ? snap.data() : { name: brandId };
+      $("brandTitle").textContent = BRAND?.name || brandId;
+      const lb = $("brandLogoBox");
+      if(BRAND?.logoUrl){
+        lb.innerHTML = `<img alt="logo" src="${escapeHtml(BRAND.logoUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:14px"/>`;
+      }else{
+        lb.textContent = (BRAND?.name || "L").slice(0,1).toUpperCase();
+      }
+    }
 
     async function loadPosSettings(){
       const { settingsPosDoc } = basePaths(BRAND_ID);
@@ -947,249 +616,176 @@ function recalc(){
         taxRate: Number(data.taxRate||0),
         serviceRate: Number(data.serviceRate||0)
       };
-      // store into hidden inputs for calculator
-      document.getElementById("tax").value = String(POS_SETTINGS.taxRate||0);
-      document.getElementById("service").value = String(POS_SETTINGS.serviceRate||0);
-      const tl = document.getElementById("taxRateLabel");
-      const sl = document.getElementById("serviceRateLabel");
-      if(tl) tl.textContent = `${POS_SETTINGS.taxRate||0}%`;
-      if(sl) sl.textContent = `${POS_SETTINGS.serviceRate||0}%`;
+      $("taxRateLabel").textContent = `${POS_SETTINGS.taxRate||0}%`;
+      $("serviceRateLabel").textContent = `${POS_SETTINGS.serviceRate||0}%`;
 
-      // settings drawer inputs
-      const st = document.getElementById("setTaxRate");
-      const ss = document.getElementById("setServiceRate");
-      if(st) st.value = String(POS_SETTINGS.taxRate||0);
-      if(ss) ss.value = String(POS_SETTINGS.serviceRate||0);
+      $("setTaxRate").value = String(POS_SETTINGS.taxRate||0);
+      $("setServiceRate").value = String(POS_SETTINGS.serviceRate||0);
 
       recalc();
     }
-      const snap = await getDoc(brandDoc);
-      BRAND = snap.exists() ? snap.data() : {name:brandId};
-      setBrandHeader();
-    }
 
-    function startProductsListener(){
+    // -------- Products realtime --------
+    function watchProducts(){
       if(unsubProducts) unsubProducts();
       const { productsCol } = basePaths(BRAND_ID);
       unsubProducts = onSnapshot(productsCol, (qs)=>{
-        PRODUCTS = qs.docs.map(d=>({ id:d.id, ...d.data() }));
-        // normalize
-        PRODUCTS = PRODUCTS.map(p=>({
-          ...p,
-          name: p.name || "Unnamed",
-          category: p.category || "Uncategorized",
-          price: Number(p.price||0),
-          imageUrl: p.imageUrl || "",
-          desc: p.desc || ""
-        }));
-        renderChips();
+        PRODUCTS = [];
+        qs.forEach(d=> PRODUCTS.push({ id:d.id, ...d.data() }));
         renderProducts();
-      }, (err)=>{
-        console.error(err);
-        setPill("bad","Products listener error");
+        renderProductsMini();
       });
     }
 
-    // ---------- Auth: owner ----------
-    $("btnRegister").onclick = async ()=>{
-      const bid = needBrandId(); if(!bid) return;
-      const email = ($("email").value||"").trim();
-      const pass = ($("password").value||"").trim();
-      if(!email || !pass){ $("authMsg").textContent="Enter email + password."; return; }
-      $("authMsg").textContent="Registering…";
-      try{
-        await createUserWithEmailAndPassword(auth, email, pass);
-        $("authMsg").textContent="Registered. You can sign in now.";
-      }catch(e){
-        console.error(e);
-        $("authMsg").textContent = e?.message || "Register failed.";
+    function renderProducts(){
+      const qtxt = ($("q").value||"").trim().toLowerCase();
+      const cat = $("cat").value || "";
+      const list = PRODUCTS
+        .filter(p=> !cat || (p.category||"")===cat )
+        .filter(p=> !qtxt || String(p.name||"").toLowerCase().includes(qtxt) || String(p.category||"").toLowerCase().includes(qtxt));
+
+      const cats = Array.from(new Set(PRODUCTS.map(p=>p.category||"Uncategorized"))).sort((a,b)=>a.localeCompare(b));
+      const prev = $("cat").value;
+      $("cat").innerHTML = `<option value="">All</option>` + cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      $("cat").value = prev;
+
+      const grid = $("productsGrid");
+      grid.innerHTML = "";
+      for(const p of list){
+        const el = document.createElement("div");
+        el.className = "p";
+        const img = p.imageUrl ? `<img src="${escapeHtml(p.imageUrl)}" alt="">` : `<div style="font-weight:900;color:var(--muted)">🍔</div>`;
+        el.innerHTML = `
+          <div class="pimg">${img}</div>
+          <div style="flex:1">
+            <div class="pname">${escapeHtml(p.name||"Unnamed")}</div>
+            <div class="pcat">${escapeHtml(p.category||"Uncategorized")}</div>
+            <div class="pprice">${money(p.price)} EGP</div>
+          </div>
+        `;
+        el.onclick = ()=> addToCart(p);
+        grid.appendChild(el);
       }
-    };
+      $("productsHint").textContent = list.length ? `${list.length} items` : "No products found.";
+    }
 
-    $("btnLogin").onclick = async ()=>{
-      const bid = needBrandId(); if(!bid) return;
-      const email = ($("email").value||"").trim();
-      const pass = ($("password").value||"").trim();
-      if(!email || !pass){ $("authMsg").textContent="Enter email + password."; return; }
-      $("authMsg").textContent="Signing in…";
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-        $("authMsg").textContent="";
-      }catch(e){
-        console.error(e);
-        $("authMsg").textContent = e?.message || "Login failed.";
+    function renderProductsMini(){
+      const root = $("prodListMini");
+      root.innerHTML = "";
+      for(const p of PRODUCTS.slice(0,50)){
+        const el = document.createElement("div");
+        el.className = "line";
+        el.innerHTML = `
+          <div>
+            <div style="font-weight:900">${escapeHtml(p.name||"Unnamed")}</div>
+            <div class="muted">${escapeHtml(p.category||"Uncategorized")} • ${money(p.price)} EGP</div>
+          </div>
+          <div class="qty"><button>+</button></div>
+        `;
+        el.querySelector("button").onclick = ()=> addToCart(p);
+        root.appendChild(el);
       }
-    };
-
-    // ---------- Auth: staff username + PIN ----------
-    $("btnStaffLogin").onclick = async ()=>{
-      const bid = needBrandId(); if(!bid) return;
-      const u = ($("staffUser").value||"").trim();
-      const pin = ($("staffPin").value||"").trim();
-      if(!u || !pin){ $("staffMsg").textContent="Enter username + PIN."; return; }
-      $("staffMsg").textContent="Checking…";
-
-      try{
-        BRAND_ID = bid;
-        await ensureBrandShell(BRAND_ID);
-        await loadBrand(BRAND_ID);
-        await loadPosSettings();
-
-        const { staffCol } = basePaths(BRAND_ID);
-        const qs = await getDocs(query(staffCol, where("username","==",u), limit(1)));
-        if(qs.empty){ $("staffMsg").textContent="User not found."; return; }
-        const docu = qs.docs[0];
-        const data = docu.data() || {};
-        let ok = false;
-        // Dashboard creates staff with pinHash (SHA-256). Support both pinHash and legacy pin.
-        if(data.pinHash){
-          const enteredHash = await sha256Hex(pin);
-          ok = String(data.pinHash) === String(enteredHash);
-        }else{
-          ok = String(data.pin||"") === String(pin);
-        }
-        ok = ok && data.active !== false;
-        if(!ok){ $("staffMsg").textContent="Invalid PIN or inactive user."; return; }
-
-        ROLE = (data.role || "cashier");
-        STAFF = { id: docu.id, username:u, role:ROLE };
-        localStorage.setItem("luma_pos_brandId", BRAND_ID);
-        localStorage.setItem("luma_pos_role", ROLE);
-        localStorage.setItem("luma_pos_staff", JSON.stringify(STAFF));
-
-        // Staff login does not require Firebase Auth session.
-        setPill("ok", `Ready • ${ROLE}`);
-        showApp(true);
-        startProductsListener();
-        renderCart();
-        toast("Welcome", `${u} • ${ROLE}`);
-        openDrawer("authDrawer", false);
-        document.getElementById("authMsgInline").textContent = `Ready • ${ROLE}`;
-        $("staffMsg").textContent="";
-      }catch(e){
-        console.error(e);
-        $("staffMsg").textContent = e?.message || "Staff login failed.";
-      }
-    };
-
-    // ---------- Session restore ----------
-    async function restore(){
-      const bid = localStorage.getItem("luma_pos_brandId") || "";
-      if(bid) $("brandId").value = bid;
-      // Owner session will be restored via Firebase Auth onAuthStateChanged.
-      const staff = localStorage.getItem("luma_pos_staff");
-      const role = localStorage.getItem("luma_pos_role");
-      if(staff && bid && !auth.currentUser){
-        try{
-          BRAND_ID = bid;
-          ROLE = role || "cashier";
-          STAFF = JSON.parse(staff);
-          await ensureBrandShell(BRAND_ID);
-          await loadBrand(BRAND_ID);
-          await loadPosSettings();
-          setPill("ok", `Ready • ${ROLE}`);
-          showApp(true);
-          startProductsListener();
-          renderCart();
-        }catch(e){ console.error(e); }
+      if(PRODUCTS.length>50){
+        const more = document.createElement("div");
+        more.className = "mini";
+        more.textContent = `Showing 50 of ${PRODUCTS.length}`;
+        root.appendChild(more);
       }
     }
 
-    // ---------- onAuthStateChanged (owner) ----------
-    onAuthStateChanged(auth, async (user)=>{
-      if(user){
-        const bid = needBrandId() || (localStorage.getItem("luma_pos_brandId")||"");
-        if(!bid){
-          setPill("warn","Enter Brand ID");
-          showApp(false);
-          return;
-        }
-        BRAND_ID = bid.trim();
-        ROLE = "owner";
-        STAFF = null;
-        localStorage.setItem("luma_pos_brandId", BRAND_ID);
-        localStorage.removeItem("luma_pos_staff");
-        localStorage.setItem("luma_pos_role", ROLE);
-
-        try{
-          await ensureBrandShell(BRAND_ID);
-          await loadBrand(BRAND_ID);
-          setPill("ok","Ready • owner");
-          showApp(true);
-          startProductsListener();
-          renderCart();
-        }catch(e){
-          console.error(e);
-          setPill("bad","Boot error");
-          showApp(false);
-          toast("Error","Failed to load brand.");
-        }
-      }else{
-        // Not signed in (could still be staff restored)
-        if(!localStorage.getItem("luma_pos_staff")){
-          setPill("warn","Not signed in");
-          showApp(false);
-          BRAND = null;
-          ROLE = "owner";
-          STAFF = null;
-        }
-      }
-      setBrandHeader();
-    });
-
-    // ---------- Pay / create order ----------
-    $("payMethods").onclick = (e)=>{
-      const el = e.target.closest(".pm");
-      if(!el) return;
-      PAY_METHOD = el.getAttribute("data-m");
-      document.querySelectorAll(".pm").forEach(x=>x.classList.remove("active"));
-      el.classList.add("active");
-    };
-
-    $("btnClearCart").onclick = ()=>{
-      CART = [];
-      $("discount").value = "";
-      $("tax").value = "";
-      $("customerName").value = "";
-      $("orderNote").value = "";
-      $("afterPayHint").textContent = "";
+    // -------- Cart --------
+    function addToCart(p){
+      const i = CART.findIndex(x=>x.productId===p.id);
+      if(i>=0) CART[i].qty += 1;
+      else CART.push({ productId:p.id, name:p.name, price:Number(p.price||0), qty:1, note:"" });
       renderCart();
-    };
-
-    $("discount").oninput = recalc;
-    // $("tax").oninput = recalc; // tax is from settings
-
-    $("search").oninput = ()=>{ SEARCH = $("search").value; renderProducts(); };
-
-    $("btnPay").onclick = ()=>{
-      if(!BRAND_ID){ toast("Not ready","Sign in first."); return; }
-      if(CART.length===0){ toast("Empty cart","Add items first."); return; }
-      openCheckout();
-    };
-
-    function openCheckout(){
-      // mirror current cart fields into checkout modal
-      $("coCustomer").value = $("customerName").value || "";
-      $("coOrderNote").value = $("orderNote").value || "";
-      // payment method mirror
-      document.querySelectorAll("#coPayMethods .pm").forEach(x=>x.classList.remove("active"));
-      const active = document.querySelector(`#coPayMethods .pm[data-m="${PAY_METHOD}"]`);
-      if(active) active.classList.add("active");
-
-      renderCheckoutSummary();
-      openDrawer("checkoutDrawer", true);
     }
 
-    function renderCheckoutSummary()
+    function renderCart(){
+      const root = $("cartLines");
+      root.innerHTML = "";
+      for(const l of CART){
+        const el = document.createElement("div");
+        el.className = "line";
+        el.innerHTML = `
+          <div style="flex:1">
+            <div style="font-weight:900">${escapeHtml(l.name)}</div>
+            <div class="muted">${money(l.price)} EGP • ${money(l.price*l.qty)} EGP</div>
+            <div style="margin-top:8px">
+              <label style="margin:0 0 6px">Item note (optional)</label>
+              <input class="input" data-note="${escapeHtml(l.productId)}" placeholder="e.g. no onions" value="${escapeHtml(l.note||"")}"/>
+            </div>
+          </div>
+          <div class="qty">
+            <button data-dec="${escapeHtml(l.productId)}">−</button>
+            <div class="n">${l.qty}</div>
+            <button data-inc="${escapeHtml(l.productId)}">+</button>
+          </div>
+        `;
+        root.appendChild(el);
+      }
+      // qty handlers
+      root.querySelectorAll("button[data-inc]").forEach(b=>{
+        b.onclick = ()=>{
+          const pid = b.getAttribute("data-inc");
+          const it = CART.find(x=>x.productId===pid); if(!it) return;
+          it.qty += 1; renderCart();
+        };
+      });
+      root.querySelectorAll("button[data-dec]").forEach(b=>{
+        b.onclick = ()=>{
+          const pid = b.getAttribute("data-dec");
+          const it = CART.find(x=>x.productId===pid); if(!it) return;
+          it.qty -= 1;
+          if(it.qty<=0) CART = CART.filter(x=>x.productId!==pid);
+          renderCart();
+        };
+      });
+      root.querySelectorAll("input[data-note]").forEach(inp=>{
+        inp.oninput = ()=>{
+          const pid = inp.getAttribute("data-note");
+          const it = CART.find(x=>x.productId===pid); if(!it) return;
+          it.note = inp.value;
+        };
+      });
+
+      $("btnClear").disabled = CART.length===0;
+      recalc();
+    }
+
+    function recalc(){
       const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
       const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
       const discount = subtotal * (discountPct/100);
-      const taxRate = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
-      const serviceRate = Math.max(0, Number(($("service").value||"0").replace(",",".")) || 0);
-      const service = Math.max(0, (subtotal - discount) * (serviceRate/100));
-      const tax = Math.max(0, (subtotal - discount + service) * (taxRate/100));
+
+      const service = Math.max(0, (subtotal - discount) * (POS_SETTINGS.serviceRate/100));
+      const tax = Math.max(0, (subtotal - discount + service) * (POS_SETTINGS.taxRate/100));
       const total = Math.max(0, subtotal - discount + service + tax);
 
+      $("tSubtotal").textContent = money(subtotal);
+      $("tDiscount").textContent = money(discount);
+      $("tService").textContent = money(service);
+      $("tTax").textContent = money(tax);
+      $("tTotal").textContent = money(total);
+
+      $("cartMeta").textContent = `${CART.reduce((s,l)=>s+Number(l.qty||0),0)} items`;
+      $("cartEmpty").classList.toggle("hidden", CART.length>0);
+      $("btnPay").disabled = CART.length===0 || total<=0;
+    }
+
+    $("discount").oninput = recalc;
+    $("btnClear").onclick = ()=>{ CART = []; $("discount").value=""; $("afterPayHint").textContent=""; renderCart(); };
+
+    // -------- Checkout --------
+    function renderCheckoutSummary(){
+      const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
+      const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
+      const discount = subtotal * (discountPct/100);
+      const service = Math.max(0, (subtotal - discount) * (POS_SETTINGS.serviceRate/100));
+      const tax = Math.max(0, (subtotal - discount + service) * (POS_SETTINGS.taxRate/100));
+      const total = Math.max(0, subtotal - discount + service + tax);
+
+      $("coMeta").textContent = `${CART.reduce((s,l)=>s+Number(l.qty||0),0)} items`;
       $("coSubtotal").textContent = money(subtotal);
       $("coDiscount").textContent = money(discount);
       $("coService").textContent = money(service);
@@ -1200,22 +796,27 @@ function recalc(){
       for(const l of CART){
         const row = document.createElement("div");
         row.className = "totrow";
-        row.innerHTML = `<span>${l.qty}× ${escapeHtml(l.name)}${l.note?` <span class="hint">(${escapeHtml(l.note)})</span>`:""}</span><strong>${money(l.price*l.qty)}</strong>`;
+        row.innerHTML = `<span>${l.qty}× ${escapeHtml(l.name)}${l.note?` <span class="mini">(${escapeHtml(l.note)})</span>`:""}</span><strong>${money(l.price*l.qty)}</strong>`;
         $("coLines").appendChild(row);
       }
-    }
       $("coHint").textContent = "";
     }
 
-    $("coPayMethods").onclick = (e)=>{
-      const el = e.target.closest(".pm");
-      if(!el) return;
-      PAY_METHOD = el.getAttribute("data-m");
-      document.querySelectorAll("#coPayMethods .pm").forEach(x=>x.classList.remove("active"));
-      el.classList.add("active");
+    $("btnPay").onclick = ()=>{
+      $("coCustomer").value = "";
+      $("coOrderNote").value = "";
+      renderCheckoutSummary();
+      openDrawer("checkoutDrawer", true);
     };
 
-    $("btnCloseCheckout").onclick = ()=> { $("customerName").value = $("coCustomer").value; $("orderNote").value = $("coOrderNote").value; openDrawer("checkoutDrawer", false); };
+    $("coPayMethods").onclick = (e)=>{
+      const el = e.target.closest(".pm"); if(!el) return;
+      document.querySelectorAll("#coPayMethods .pm").forEach(x=>x.classList.remove("active"));
+      el.classList.add("active");
+      PAY_METHOD = el.getAttribute("data-m");
+    };
+
+    $("btnCloseCheckout").onclick = ()=> openDrawer("checkoutDrawer", false);
     $("btnEditCart").onclick = ()=> openDrawer("checkoutDrawer", false);
 
     $("btnConfirmPay").onclick = async ()=>{
@@ -1225,10 +826,8 @@ function recalc(){
       const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
       const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
       const discount = subtotal * (discountPct/100);
-      const taxRate = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
-      const serviceRate = Math.max(0, Number(($("service").value||"0").replace(",",".")) || 0);
-      const service = Math.max(0, (subtotal - discount) * (serviceRate/100));
-      const tax = Math.max(0, (subtotal - discount + service) * (taxRate/100));
+      const service = Math.max(0, (subtotal - discount) * (POS_SETTINGS.serviceRate/100));
+      const tax = Math.max(0, (subtotal - discount + service) * (POS_SETTINGS.taxRate/100));
       const total = Math.max(0, subtotal - discount + service + tax);
 
       $("btnConfirmPay").disabled = true;
@@ -1236,21 +835,18 @@ function recalc(){
       try{
         const { ordersCol, runtimeCustomerDoc, countersDoc } = basePaths(BRAND_ID);
 
-        // Allocate sequential orderNo (1001, 1002, ...)
-        const { orderNo, nextNo } = await runTransaction(db, async (tx)=>{
-          const cs = await tx.get(countersDoc);
+        const orderNo = await runTransaction(db, async (tx)=>{
+          const snap = await tx.get(countersDoc);
           let next = 1000;
-          if(cs.exists()){
-            next = Number(cs.data()?.nextOrderNo||1000);
-          }
+          if(snap.exists()) next = Number(snap.data()?.nextOrderNo||1000);
           const newNo = next + 1;
           tx.set(countersDoc, { nextOrderNo: newNo, updatedAt: serverTimestamp() }, { merge:true });
-          return { orderNo: newNo, nextNo: newNo };
+          return newNo;
         });
 
         const order = {
           brandId: BRAND_ID,
-          orderNo: orderNo,
+          orderNo,
           brandName: BRAND?.name || BRAND_ID,
           brandLogoUrl: BRAND?.logoUrl || "",
           status: "preparing",
@@ -1267,9 +863,9 @@ function recalc(){
             subtotal: Number(subtotal.toFixed(2)),
             discountPct: Number(discountPct.toFixed(2)),
             discount: Number(discount.toFixed(2)),
-            serviceRate: Number(serviceRate.toFixed(2)),
+            serviceRate: Number(POS_SETTINGS.serviceRate||0),
             service: Number(service.toFixed(2)),
-            taxRate: Number(taxRate.toFixed(2)),
+            taxRate: Number(POS_SETTINGS.taxRate||0),
             tax: Number(tax.toFixed(2)),
             total: Number(total.toFixed(2))
           },
@@ -1277,8 +873,7 @@ function recalc(){
           meta: {
             source: "pos",
             role: ROLE,
-            staffUsername: STAFF?.username || null,
-            createdAtISO: nowISO()
+            staffUsername: STAFF?.username || null
           },
           timestamps: {
             createdAt: serverTimestamp(),
@@ -1298,13 +893,10 @@ function recalc(){
 
         const receiptUrl = `receipt.html?brandId=${encodeURIComponent(BRAND_ID)}&orderId=${encodeURIComponent(ref.id)}`;
         $("afterPayHint").innerHTML = `✅ Order <b>#${orderNo}</b> sent. Receipt: <code>${escapeHtml(receiptUrl)}</code>`;
-        toast("Paid & sent to kitchen", `Order #${orderNo}`);
+        toast("Paid & sent", `Order #${orderNo}`);
 
-        // Reset cart
         CART = [];
         $("discount").value = "";
-        $("customerName").value = "";
-        $("orderNote").value = "";
         renderCart();
         openDrawer("checkoutDrawer", false);
       }catch(e){
@@ -1316,41 +908,196 @@ function recalc(){
       }
     };
 
-      $("btnPay").disabled = true;
-      try{
-        const { ordersCol, runtimeCustomerDoc } = basePaths(BRAND_ID);
-        const ref = await addDoc(ordersCol, order);
+    // -------- Orders list + actions --------
+    function watchOrders(){
+      if(unsubOrders) unsubOrders();
+      const { ordersCol } = basePaths(BRAND_ID);
+      const q = query(ordersCol, orderBy("timestamps.createdAt","desc"), limit(50));
+      unsubOrders = onSnapshot(q, (qs)=>{
+        window.__ordersCache = [];
+        qs.forEach(d=> window.__ordersCache.push({ id:d.id, ...d.data() }));
+        if($("ordersDrawer").style.display==="flex") renderOrders();
+      });
+    }
 
-        // Customer display pointer (no params customer screen)
-        await setDoc(runtimeCustomerDoc, {
-          lastPaidOrderId: ref.id,
-          lastPaidAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        }, { merge:true });
+    function renderOrders(){
+      const status = $("ordStatus").value || "";
+      const list = (window.__ordersCache||[]).filter(o=> !status || o.status===status);
 
-        const receiptUrl = `receipt.html?brandId=${encodeURIComponent(BRAND_ID)}&orderId=${encodeURIComponent(ref.id)}`;
-        $("afterPayHint").innerHTML = `
-          ✅ Order sent. <b>Order ID:</b> <code>${ref.id}</code><br/>
-          Receipt link: <code>${escapeHtml(receiptUrl)}</code>
+      const root = $("ordersList");
+      root.innerHTML = "";
+      for(const o of list){
+        const total = o?.totals?.total ?? 0;
+        const pm = o?.payment?.method || "—";
+        const cn = o?.customerName ? ` • ${escapeHtml(o.customerName)}` : "";
+        const card = document.createElement("div");
+        card.className = "line";
+        card.innerHTML = `
+          <div style="flex:1">
+            <div style="font-weight:900">#${escapeHtml(String(o.orderNo||o.id))}</div>
+            <div class="muted">${escapeHtml(o.status||"—")} • ${money(total)} EGP • ${escapeHtml(pm)}${cn}</div>
+          </div>
+          <div class="row" style="gap:8px;justify-content:flex-end">
+            <button class="btn" data-receipt="${o.id}">Receipt</button>
+            <button class="btn danger" data-cancel="${o.id}" ${o.status==="cancelled"?"disabled":""}>Cancel</button>
+            <button class="btn primary" data-refund="${o.id}">Refund</button>
+          </div>
         `;
-        toast("Paid & sent to kitchen", `Order ${ref.id}`);
+        root.appendChild(card);
+      }
+      if(!list.length){
+        root.innerHTML = `<div class="mini">No orders.</div>`;
+      }
 
-        // Reset cart for next order
-        CART = [];
-        $("discount").value = "";
-        $("tax").value = "";
-        $("customerName").value = "";
-        $("orderNote").value = "";
-        renderCart();
+      root.querySelectorAll("button[data-receipt]").forEach(b=>{
+        b.onclick = ()=>{
+          const id = b.getAttribute("data-receipt");
+          const url = `receipt.html?brandId=${encodeURIComponent(BRAND_ID)}&orderId=${encodeURIComponent(id)}`;
+          window.open(url, "_blank");
+        };
+      });
+      root.querySelectorAll("button[data-cancel]").forEach(b=>{
+        b.onclick = ()=> cancelOrder(b.getAttribute("data-cancel"));
+      });
+      root.querySelectorAll("button[data-refund]").forEach(b=>{
+        b.onclick = ()=> openRefund(b.getAttribute("data-refund"));
+      });
+    }
+
+    async function cancelOrder(orderId){
+      try{
+        const ref = doc(db, `brands/${BRAND_ID}/orders/${orderId}`);
+        await updateDoc(ref, {
+          status:"cancelled",
+          "timestamps.cancelledAt": serverTimestamp(),
+          "timestamps.updatedAt": serverTimestamp()
+        });
+        toast("Cancelled","Order updated.");
       }catch(e){
         console.error(e);
-        toast("Payment failed", e?.message || "Could not create order.");
-      }finally{
-        $("btnPay").disabled = false;
+        toast("Cancel failed", e?.message || "");
+      }
+    }
+
+    // -------- Refund (full or by items) --------
+    let __refundOrder = null;
+    let __refundMode = "full";
+
+    function openRefund(orderId){
+      const o = (window.__ordersCache||[]).find(x=>x.id===orderId);
+      if(!o){ toast("Not found","Order missing."); return; }
+      __refundOrder = o;
+      __refundMode = "full";
+
+      $("rfMeta").textContent = `Refund for Order #${o.orderNo||o.id} • ${money(o?.totals?.total||0)} EGP`;
+      $("rfModeFull").classList.add("active");
+      $("rfModeItems").classList.remove("active");
+      $("rfItemsWrap").classList.add("hidden");
+      $("rfItemsWrap").innerHTML = "";
+      $("rfHint").textContent = "";
+
+      const items = Array.isArray(o.items) ? o.items : [];
+      const wrap = document.createElement("div");
+      wrap.className = "card";
+      wrap.innerHTML = `<div class="card-h"><div><h2>Select items</h2><div class="mini">Choose qty to refund per item</div></div></div><div class="card-b" id="rfItems"></div>`;
+      const box = wrap.querySelector("#rfItems");
+      for(const it of items){
+        const row = document.createElement("div");
+        row.className = "line";
+        row.dataset.pid = String(it.productId||it.name||"");
+        row.dataset.max = String(it.qty||0);
+        row.innerHTML = `
+          <div style="flex:1">
+            <div style="font-weight:900">${escapeHtml(it.name||"Item")}</div>
+            <div class="muted">Bought: <b>${escapeHtml(it.qty||0)}</b> • ${money(it.price||0)} EGP</div>
+          </div>
+          <div class="qty">
+            <button class="rfDec">−</button>
+            <div class="n">0</div>
+            <button class="rfInc">+</button>
+          </div>
+        `;
+        row.querySelector(".rfInc").onclick = ()=>{
+          const max = Number(row.dataset.max||0);
+          const nEl = row.querySelector(".n");
+          let n = Number(nEl.textContent||0);
+          n = Math.min(max, n+1);
+          nEl.textContent = String(n);
+        };
+        row.querySelector(".rfDec").onclick = ()=>{
+          const nEl = row.querySelector(".n");
+          let n = Number(nEl.textContent||0);
+          n = Math.max(0, n-1);
+          nEl.textContent = String(n);
+        };
+        box.appendChild(row);
+      }
+      $("rfItemsWrap").appendChild(wrap);
+
+      openDrawer("refundDrawer", true);
+    }
+
+    $("rfModeFull").onclick = ()=>{
+      __refundMode = "full";
+      $("rfModeFull").classList.add("active");
+      $("rfModeItems").classList.remove("active");
+      $("rfItemsWrap").classList.add("hidden");
+      $("rfHint").textContent = "";
+    };
+    $("rfModeItems").onclick = ()=>{
+      __refundMode = "items";
+      $("rfModeItems").classList.add("active");
+      $("rfModeFull").classList.remove("active");
+      $("rfItemsWrap").classList.remove("hidden");
+      $("rfHint").textContent = "Select quantities to refund, then confirm.";
+    };
+
+    $("btnCloseRefund").onclick = ()=> openDrawer("refundDrawer", false);
+    $("btnCancelRefund").onclick = ()=> openDrawer("refundDrawer", false);
+
+    $("btnConfirmRefund").onclick = async ()=>{
+      if(!__refundOrder) return;
+      try{
+        const ref = doc(db, `brands/${BRAND_ID}/orders/${__refundOrder.id}`);
+        const refund = { mode: __refundMode, at: serverTimestamp() };
+
+        if(__refundMode === "full"){
+          refund.full = true;
+        }else{
+          const selected = [];
+          $("rfItemsWrap").querySelectorAll(".line").forEach(row=>{
+            const pid = row.dataset.pid;
+            const qty = Number(row.querySelector(".n")?.textContent||0);
+            if(qty>0){
+              const it = (__refundOrder.items||[]).find(x=>String(x.productId||x.name)===pid) || {};
+              selected.push({
+                productId: it.productId || null,
+                name: it.name || pid,
+                qty,
+                unitPrice: Number(it.price||0)
+              });
+            }
+          });
+          if(!selected.length){
+            toast("Select items","Choose at least 1 item qty.");
+            return;
+          }
+          refund.items = selected;
+        }
+
+        await updateDoc(ref, { refund, "timestamps.updatedAt": serverTimestamp() });
+        toast("Refund recorded", `Order #${__refundOrder.orderNo||__refundOrder.id}`);
+        openDrawer("refundDrawer", false);
+      }catch(e){
+        console.error(e);
+        toast("Refund failed", e?.message || "");
       }
     };
 
-    
+    // -------- Settings --------
+    $("btnOpenSettings").onclick = ()=> openDrawer("settingsDrawer", true);
+    $("btnCloseSettings").onclick = ()=> openDrawer("settingsDrawer", false);
+
     $("btnResetSettings").onclick = ()=>{
       $("setTaxRate").value = String(POS_SETTINGS.taxRate||0);
       $("setServiceRate").value = String(POS_SETTINGS.serviceRate||0);
@@ -1377,375 +1124,221 @@ function recalc(){
       }
     };
 
-// ---------- Products manager ----------
-    function openDrawer(id, yes){
-      const d = $(id);
-      d.style.display = yes ? "flex" : "none";
-    }
-
-    // ---------- Auth modal (login) ----------
-    function syncAuthModalBrand(){
-      const bid = (document.getElementById("brandId").value||"").trim();
-      const bc = document.getElementById("brandCode");
-      if(bc) bc.textContent = bid || "—";
-    }
-    document.getElementById("brandId").addEventListener("input", ()=>{
-      syncAuthModalBrand();
-      document.getElementById("authMsgInline").textContent = "Not signed in";
-    });
-
-    document.getElementById("btnOpenAuth").onclick = ()=>{
-      syncAuthModalBrand();
-      openDrawer("authDrawer", true);
-    };
-    document.getElementById("btnCloseAuth").onclick = ()=> openDrawer("authDrawer", false);
-
-    document.getElementById("authTabs").onclick = (e)=>{
-      const tab = e.target.closest(".chip")?.getAttribute("data-tab");
-      if(!tab) return;
-      document.querySelectorAll("#authTabs .chip").forEach(x=>x.classList.remove("active"));
-      e.target.closest(".chip").classList.add("active");
-      document.getElementById("tabOwner").classList.toggle("hidden", tab!=="owner");
-      document.getElementById("tabStaff").classList.toggle("hidden", tab!=="staff");
-    };
+    // -------- Products manager --------
     $("btnOpenProducts").onclick = ()=> openDrawer("productsDrawer", true);
     $("btnCloseProducts").onclick = ()=> openDrawer("productsDrawer", false);
-    $("btnOpenRecent").onclick = ()=> { openDrawer("recentDrawer", true); refreshRecent(); };
-    $("btnOpenSettings").onclick = ()=> { openDrawer("settingsDrawer", true); };
-    $("btnCloseRecent").onclick = ()=> openDrawer("recentDrawer", false);
-    $("btnCloseSettings").onclick = ()=> openDrawer("settingsDrawer", false);
-
-    $("btnClearP").onclick = ()=>{
+    $("btnResetProduct").onclick = ()=>{
       $("pName").value=""; $("pCat").value=""; $("pPrice").value=""; $("pDesc").value=""; $("pImg").value="";
-      $("pmMsg").textContent="";
+      $("prodMsg").textContent="";
     };
 
-    $("btnSaveP").onclick = async ()=>{
+    $("btnAddProduct").onclick = async ()=>{
       if(!BRAND_ID){ toast("Not ready","Sign in first."); return; }
       const name = ($("pName").value||"").trim();
       const category = ($("pCat").value||"").trim() || "Uncategorized";
       const price = Number(($("pPrice").value||"0").replace(",",".")) || 0;
-      const desc = ($("pDesc").value||"").trim() || "";
-      const file = $("pImg").files?.[0] || null;
-      if(!name || price<=0){ $("pmMsg").textContent="Enter name + valid price."; return; }
+      const desc = ($("pDesc").value||"").trim() || null;
+      if(!name || price<=0){ toast("Missing info","Name + price required."); return; }
 
-      $("btnSaveP").disabled = true;
-      $("pmMsg").textContent = "Saving…";
+      $("btnAddProduct").disabled = true;
+      $("prodMsg").textContent = "Saving…";
       try{
+        const { productsCol } = basePaths(BRAND_ID);
         let imageUrl = "";
-        if(file){
-          const path = `brands/${BRAND_ID}/products/${Date.now()}_${file.name}`;
-          const r = sRef(storage, path);
-          await uploadBytes(r, file);
+        const f = $("pImg").files?.[0];
+        if(f){
+          const key = `brands/${BRAND_ID}/products/${Date.now()}_${f.name}`;
+          const r = sRef(storage, key);
+          await uploadBytes(r, f);
           imageUrl = await getDownloadURL(r);
         }
-        const { productsCol } = basePaths(BRAND_ID);
         await addDoc(productsCol, {
-          name, category, price,
-          desc: desc || null,
-          imageUrl: imageUrl || null,
+          name, category, price, desc,
+          imageUrl: imageUrl || "",
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
-        $("pmMsg").textContent = "✅ Saved";
-        toast("Product saved", name);
-        $("btnClearP").click();
+        toast("Product added", name);
+        $("prodMsg").textContent = "✅ Added";
+        $("pName").value=""; $("pPrice").value=""; $("pDesc").value=""; $("pImg").value="";
       }catch(e){
         console.error(e);
-        $("pmMsg").textContent = e?.message || "Save failed.";
+        $("prodMsg").textContent = e?.message || "Failed.";
       }finally{
-        $("btnSaveP").disabled = false;
+        $("btnAddProduct").disabled = false;
       }
     };
 
-    // Simple list view inside products drawer
-    function renderPMList(){
-      const root = $("pmList");
-      root.innerHTML = "";
-      if(PRODUCTS.length===0){
-        root.innerHTML = `<div class="empty">No products yet.</div>`;
-        return;
-      }
-      for(const p of PRODUCTS){
-        const el = document.createElement("div");
-        el.className="line";
-        el.innerHTML = `
-          <div>
-            <div class="title">${escapeHtml(p.name)}</div>
-            <div class="sub">${escapeHtml(p.category)} • ${money(p.price)} EGP</div>
-          </div>
-          <div class="qty"><span class="pill"><span class="dot ok"></span>Active</span></div>
-        `;
-        root.appendChild(el);
-      }
-    }
-    // keep PM list up to date
-    setInterval(()=>{ if($("productsDrawer").style.display==="flex") renderPMList(); }, 900);
+    // -------- Orders modal --------
+    $("btnOpenOrders").onclick = ()=>{ openDrawer("ordersDrawer", true); renderOrders(); };
+    $("btnCloseOrders").onclick = ()=> openDrawer("ordersDrawer", false);
+    $("ordStatus").onchange = renderOrders;
 
-    // ---------- Recent orders ----------
-    async function refreshRecent(){
-      if(!BRAND_ID) return;
-      const root = $("recentList");
-      root.innerHTML = `<div class="empty">Loading…</div>`;
-      try{
-        const { ordersCol } = basePaths(BRAND_ID);
-        const qs = await getDocs(query(ordersCol, orderBy("timestamps.createdAt","desc"), limit(20)));
-        if(qs.empty){ root.innerHTML = `<div class="empty">No orders yet.</div>`; return; }
-        root.innerHTML = "";
-        for(const d of qs.docs){
-          const o = d.data()||{};
-          const status = o.status || "preparing";
-          const total = o.totals?.total ?? 0;
-          const pm = o.payment?.method || "-";
-          const id = d.id;
+    // -------- Auth modal tabs --------
+    $("btnOpenAuth").onclick = ()=> openDrawer("authDrawer", true);
+    $("btnCloseAuth").onclick = ()=> openDrawer("authDrawer", false);
 
-          const card = document.createElement("div");
-          card.className = "line";
-          card.innerHTML = `
-            <div>
-              <div class="title">#${escapeHtml(String(o.orderNo||id))}</div>
-              <div class="sub">${escapeHtml(status)} • ${money(total)} EGP • ${escapeHtml(pm)}${o.customerName?` • ${escapeHtml(o.customerName)}`:``}</div>
-              <div class="hint" style="margin-top:6px">${escapeHtml((o.items||[]).map(x=>`${x.qty}× ${x.name}`).join(" • ") || "")}</div>
-            </div>
-            <div class="rActions">
-              <button class="miniBtn" data-open="${id}">Receipt</button>
-              <button class="miniBtn danger" data-cancel="${id}" ${status==="cancelled"?"disabled":""}>Cancel</button>
-              <button class="miniBtn primary" data-refund="${id}">Refund</button>
-            </div>
-          `;
-          root.appendChild(card);
-        }
-
-        root.querySelectorAll("button[data-open]").forEach(b=>{
-          b.onclick=()=>{
-            const id=b.getAttribute("data-open");
-            const url = `receipt.html?brandId=${encodeURIComponent(BRAND_ID)}&orderId=${encodeURIComponent(id)}`;
-            window.open(url, "_blank");
-          };
-        });
-        root.querySelectorAll("button[data-cancel]").forEach(b=>{
-          b.onclick=()=> cancelOrder(b.getAttribute("data-cancel"));
-        });
-        root.querySelectorAll("button[data-refund]").forEach(b=>{
-          b.onclick=()=> refundOrder(b.getAttribute("data-refund"));
-        });
-
-      }catch(e){
-        console.error(e);
-        root.innerHTML = `<div class="empty">Failed to load recent orders.</div>`;
-      }
-    }
-    $("btnRefreshRecent").onclick = refreshRecent;
-
-    async function cancelOrder(orderId){
-      if(!confirm(`Cancel order ${orderId}?`)) return;
-      try{
-        const orderRef = doc(db, `brands/${BRAND_ID}/orders/${orderId}`);
-        await updateDoc(orderRef, {
-          status:"cancelled",
-          "timestamps.cancelledAt": serverTimestamp(),
-          "timestamps.updatedAt": serverTimestamp()
-        });
-        toast("Cancelled", orderId);
-        refreshRecent();
-      }catch(e){
-        console.error(e);
-        toast("Cancel failed", e?.message || "");
-      }
-    }
-
-    let __refundOrder = null;
-    let __refundMode = "full"; // full|items
-
-    async function refundOrder(orderId){
-      try{
-        const orderRef = doc(db, `brands/${BRAND_ID}/orders/${orderId}`);
-        const snap = await getDoc(orderRef);
-        if(!snap.exists()){ toast("Not found","Order missing."); return; }
-        const o = snap.data()||{};
-        __refundOrder = { id: orderId, ref: orderRef, data: o };
-        __refundMode = "full";
-
-        $("rfMeta").textContent = `Refund for Order #${o.orderNo||orderId} • ${money(o.totals?.total||0)} EGP`;
-        $("rfModeFull").classList.add("active");
-        $("rfModeItems").classList.remove("active");
-        $("rfItemsWrap").classList.add("hidden");
-        $("rfItemsWrap").innerHTML = "";
-        $("rfHint").textContent = "";
-
-        // build items UI
-        const items = Array.isArray(o.items) ? o.items : [];
-        const wrap = document.createElement("div");
-        wrap.className = "card";
-        wrap.innerHTML = `<div class="card-h"><h2>Select items</h2><div class="mini">Choose qty to refund per item</div></div><div class="card-b" id="rfItems"></div>`;
-        const itemsBox = wrap.querySelector("#rfItems");
-        for(const it of items){
-          const row = document.createElement("div");
-          row.className = "line";
-          row.innerHTML = `
-            <div>
-              <div class="title">${escapeHtml(it.name||"Item")}</div>
-              <div class="sub">Bought: <b>${escapeHtml(it.qty||0)}</b> • ${money(it.price||0)} EGP</div>
-            </div>
-            <div class="qty">
-              <button data-dec="${escapeAttr(it.productId||it.name)}">−</button>
-              <div class="n" data-n="${escapeAttr(it.productId||it.name)}">0</div>
-              <button data-inc="${escapeAttr(it.productId||it.name)}">+</button>
-            </div>
-          `;
-          row.dataset.pid = (it.productId||it.name);
-          row.dataset.max = String(it.qty||0);
-          itemsBox.appendChild(row);
-        }
-        $("rfItemsWrap").appendChild(wrap);
-
-        // qty handlers
-        $("rfItemsWrap").querySelectorAll("button[data-inc]").forEach(b=>{
-          b.onclick = ()=>{
-            const pid = b.getAttribute("data-inc");
-            const row = b.closest(".line");
-            const max = Number(row.dataset.max||0);
-            const nEl = row.querySelector(`[data-n="${pid}"]`);
-            let n = Number(nEl.textContent||0);
-            n = Math.min(max, n+1);
-            nEl.textContent = String(n);
-          };
-        });
-        $("rfItemsWrap").querySelectorAll("button[data-dec]").forEach(b=>{
-          b.onclick = ()=>{
-            const pid = b.getAttribute("data-dec");
-            const row = b.closest(".line");
-            const nEl = row.querySelector(`[data-n="${pid}"]`);
-            let n = Number(nEl.textContent||0);
-            n = Math.max(0, n-1);
-            nEl.textContent = String(n);
-          };
-        });
-
-        openDrawer("refundDrawer", true);
-      }catch(e){
-        console.error(e);
-        toast("Refund failed", e?.message || "");
-      }
-    }
-
-    $("btnCloseRefund").onclick = ()=> openDrawer("refundDrawer", false);
-    $("btnCancelRefund").onclick = ()=> openDrawer("refundDrawer", false);
-
-    $("rfModeFull").onclick = ()=>{
-      __refundMode = "full";
-      $("rfModeFull").classList.add("active");
-      $("rfModeItems").classList.remove("active");
-      $("rfItemsWrap").classList.add("hidden");
-      $("rfHint").textContent = "";
-    };
-    $("rfModeItems").onclick = ()=>{
-      __refundMode = "items";
-      $("rfModeItems").classList.add("active");
-      $("rfModeFull").classList.remove("active");
-      $("rfItemsWrap").classList.remove("hidden");
-      $("rfHint").textContent = "Select quantities to refund, then confirm.";
+    $("authTabs").onclick = (e)=>{
+      const chip = e.target.closest(".chip"); if(!chip) return;
+      document.querySelectorAll("#authTabs .chip").forEach(x=>x.classList.remove("active"));
+      chip.classList.add("active");
+      const tab = chip.getAttribute("data-tab");
+      $("tabOwner").classList.toggle("hidden", tab!=="owner");
+      $("tabStaff").classList.toggle("hidden", tab!=="staff");
     };
 
-    $("btnConfirmRefund").onclick = async ()=>{
-      if(!__refundOrder){ return; }
-      try{
-        const o = __refundOrder.data;
-        const total = Number(o.totals?.total||0);
-
-        let refund = { mode: __refundMode, at: serverTimestamp() };
-
-        if(__refundMode === "full"){
-          refund.full = true; // will be corrected below
-        }else{
-          const selected = [];
-          const rows = $("rfItemsWrap").querySelectorAll(".line");
-          rows.forEach(row=>{
-            const pid = row.dataset.pid;
-            const nEl = row.querySelector(".n");
-            const qty = Number(nEl?.textContent||0);
-            if(qty>0){
-              const item = (o.items||[]).find(x=>(x.productId||x.name)===pid) || {};
-              selected.push({
-                productId: item.productId || null,
-                name: item.name || pid,
-                qty: qty,
-                unitPrice: Number(item.price||0)
-              });
-            }
-          });
-          if(selected.length===0){
-            toast("Select items","Choose at least 1 item qty.");
-            return;
-          }
-          refund.items = selected;
-        }
-
-        await updateDoc(__refundOrder.ref, {
-          refund: refund,
-          "timestamps.updatedAt": serverTimestamp()
-        });
-        toast("Refund recorded", `Order #${o.orderNo||__refundOrder.id}`);
-        openDrawer("refundDrawer", false);
-        refreshRecent();
-      }catch(e){
-        console.error(e);
-        toast("Refund failed", e?.message || "");
-      }
-    };
-      try{
-        const orderRef = doc(db, `brands/${BRAND_ID}/orders/${orderId}`);
-        await updateDoc(orderRef, {
-          refund: { amount: amount, at: serverTimestamp() },
-          "timestamps.updatedAt": serverTimestamp()
-        });
-        toast("Refund recorded", `${orderId}${amount!=null?` • ${money(amount)} EGP`:" • full"}`);
-        refreshRecent();
-      }catch(e){
-        console.error(e);
-        toast("Refund failed", e?.message || "");
-      }
+    // SHA-256 for staff PIN (matches dashboard pinHash)
+    async function sha256(text){
+      const enc = new TextEncoder().encode(String(text));
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
     }
 
-    
-    // keep checkout summary updated while open
-    window.__coLive = setInterval(()=>{
-      if($("checkoutDrawer").style.display==="flex"){
-        renderCheckoutSummary();
-      }
-    }, 600);
+    async function setReady(roleLabel){
+      $("btnOpenSettings").disabled = false;
+      $("btnOpenProducts").disabled = false;
+      $("btnOpenOrders").disabled = false;
+      $("btnSignOut").disabled = false;
+      $("btnOpenAuth").disabled = true;
 
-// ---------- Sign out ----------
-    $("btnSignOut").onclick = async ()=>{
-      // clear staff
-      localStorage.removeItem("luma_pos_staff");
-      localStorage.removeItem("luma_pos_role");
-      STAFF = null;
-      ROLE = "owner";
-      BRAND = null;
-      PRODUCTS = [];
-      CART = [];
-      renderCart();
-      try{
-        if(auth.currentUser) await signOut(auth);
-      }catch(e){}
-      setPill("warn","Not signed in");
-      showApp(false);
-      setBrandHeader();
-      toast("Signed out","See you.");
+      setPill("ok", `Ready • ${roleLabel}`);
       openDrawer("authDrawer", false);
-      const inline = document.getElementById("authMsgInline"); if(inline) inline.textContent="Not signed in";
+
+      await ensureBrandShell(BRAND_ID);
+      await loadBrand(BRAND_ID);
+      await loadPosSettings();
+      watchProducts();
+      watchOrders();
+    }
+
+    // Owner register/login
+    $("btnRegister").onclick = async ()=>{
+      const brandId = ($("brandId").value||"").trim();
+      const email = ($("email").value||"").trim();
+      const pass = ($("password").value||"").trim();
+      if(!brandId){ $("authMsg").textContent = "Brand ID required."; return; }
+      if(!email || !pass){ $("authMsg").textContent = "Email + password required."; return; }
+      $("authMsg").textContent = "Creating…";
+      try{
+        await createUserWithEmailAndPassword(auth, email, pass);
+        BRAND_ID = brandId;
+        localStorage.setItem("luma_pos_brandId", BRAND_ID);
+        ROLE = "owner";
+        STAFF = null;
+        await setReady("owner");
+      }catch(e){
+        console.error(e);
+        $("authMsg").textContent = e?.message || "Failed.";
+      }
     };
 
-    // ---------- boot ----------
-    setPill("warn","Not signed in");
-    restore();
+    $("btnLogin").onclick = async ()=>{
+      const brandId = ($("brandId").value||"").trim();
+      const email = ($("email").value||"").trim();
+      const pass = ($("password").value||"").trim();
+      if(!brandId){ $("authMsg").textContent = "Brand ID required."; return; }
+      if(!email || !pass){ $("authMsg").textContent = "Email + password required."; return; }
+      $("authMsg").textContent = "Signing in…";
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+        BRAND_ID = brandId;
+        localStorage.setItem("luma_pos_brandId", BRAND_ID);
+        ROLE = "owner";
+        STAFF = null;
+        await setReady("owner");
+      }catch(e){
+        console.error(e);
+        $("authMsg").textContent = e?.message || "Failed.";
+      }
+    };
 
-    // close drawers by backdrop click
-    ["productsDrawer","recentDrawer"].forEach(id=>{
-      const el = $(id);
-      el.addEventListener("click",(e)=>{ if(e.target===el) openDrawer(id,false); });
+    // Staff login (username+PIN)
+    $("btnStaffLogin").onclick = async ()=>{
+      const brandId = ($("brandId").value||"").trim();
+      const username = ($("staffUser").value||"").trim();
+      const pin = ($("staffPin").value||"").trim();
+      if(!brandId){ $("staffMsg").textContent = "Brand ID required."; return; }
+      if(!username || !pin){ $("staffMsg").textContent = "Username + PIN required."; return; }
+      $("staffMsg").textContent = "Checking…";
+
+      try{
+        BRAND_ID = brandId;
+        localStorage.setItem("luma_pos_brandId", BRAND_ID);
+        await ensureBrandShell(BRAND_ID);
+
+        const { staffCol } = basePaths(BRAND_ID);
+        const qs = await getDocs(query(staffCol, where("username","==", username), limit(1)));
+        if(qs.empty){ $("staffMsg").textContent = "Invalid PIN or inactive user."; return; }
+        const doc1 = qs.docs[0];
+        const data = doc1.data()||{};
+        if(data.active === false){ $("staffMsg").textContent = "Invalid PIN or inactive user."; return; }
+
+        const enteredHash = await sha256(pin);
+        const ok = (data.pinHash && data.pinHash === enteredHash) || (data.pin && String(data.pin)===String(pin));
+        if(!ok){ $("staffMsg").textContent = "Invalid PIN or inactive user."; return; }
+
+        ROLE = "staff";
+        STAFF = { id: doc1.id, ...data };
+        await setReady("staff");
+      }catch(e){
+        console.error(e);
+        $("staffMsg").textContent = e?.message || "Failed.";
+      }
+    };
+
+    // Sign out
+    $("btnSignOut").onclick = async ()=>{
+      try{ await signOut(auth); }catch(_){}
+      ROLE = "guest"; STAFF = null;
+      BRAND_ID = "";
+      BRAND = null;
+      localStorage.removeItem("luma_pos_brandId");
+      if(unsubProducts) unsubProducts();
+      if(unsubOrders) unsubOrders();
+      PRODUCTS = []; CART = [];
+      $("productsGrid").innerHTML = "";
+      $("prodListMini").innerHTML = "";
+      $("ordersList").innerHTML = "";
+      $("afterPayHint").textContent = "";
+      $("discount").value = "";
+      renderCart();
+
+      $("btnOpenSettings").disabled = true;
+      $("btnOpenProducts").disabled = true;
+      $("btnOpenOrders").disabled = true;
+      $("btnSignOut").disabled = true;
+      $("btnOpenAuth").disabled = false;
+
+      $("brandTitle").textContent = "POS";
+      $("brandLogoBox").textContent = "L";
+      setPill("warn","Not signed in");
+      toast("Signed out","See you.");
+    };
+
+    // Restore last brand id for convenience
+    const lastBrand = localStorage.getItem("luma_pos_brandId") || "";
+    if(lastBrand){ $("brandId").value = lastBrand; }
+
+    // Live auth state: if owner is already signed in, user still needs Brand ID to load correct paths.
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user) return;
+      // If owner signed in, keep owner role but do not auto-ready unless brandId is available
+      const bid = ($("brandId").value||"").trim() || (localStorage.getItem("luma_pos_brandId")||"");
+      if(bid){
+        BRAND_ID = bid;
+        localStorage.setItem("luma_pos_brandId", BRAND_ID);
+        ROLE = "owner";
+        STAFF = null;
+        await setReady("owner");
+      }else{
+        setPill("warn","Signed in (owner) • select Brand ID");
+      }
     });
+
+    // Filters
+    $("q").oninput = renderProducts;
+    $("cat").onchange = renderProducts;
+
   </script>
 </body>
 </html>
