@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Luma — Receipt</title>
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --panel:#ffffff;
+      --panel-soft:#f9fafb;
+      --ink:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --accent:#2563eb;
+      --accent-strong:#1d4ed8;
+      --accent-soft:#dbeafe;
+      --danger:#ef4444;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --radius:18px;
+      --shadow:0 18px 40px rgba(15,23,42,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Montserrat,system-ui,Segoe UI,Arial;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:780px;margin:18px auto;padding:0 14px}
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .top{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px 14px;border-bottom:1px solid var(--border);
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:10px;min-width:240px}
+    .logo{
+      width:44px;height:44px;border-radius:14px;border:1px solid var(--border);
+      background:linear-gradient(135deg,var(--accent-soft),#fff);
+      display:grid;place-items:center;font-weight:900;color:var(--accent);
+      overflow:hidden;
+    }
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .brand h1{font-size:16px;margin:0}
+    .brand .sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .btn{
+      border:1px solid var(--border);background:var(--panel-soft);color:var(--ink);
+      padding:10px 12px;border-radius:14px;font-weight:800;cursor:pointer;
+      display:inline-flex;gap:8px;align-items:center;
+    }
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid var(--border);background:var(--panel-soft);
+      padding:8px 10px;border-radius:999px;font-weight:800;font-size:12px;color:var(--muted)
+    }
+    .dot{width:9px;height:9px;border-radius:50%}
+    .dot.ok{background:var(--ok)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--danger)}
+    .body{padding:14px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:640px){ .grid2{grid-template-columns:1fr;} }
+    .box{
+      border:1px solid var(--border);
+      background:var(--panel-soft);
+      border-radius:16px;
+      padding:12px;
+    }
+    .k{font-size:11px;color:var(--muted);font-weight:800}
+    .v{font-size:13px;font-weight:800;margin-top:6px}
+    .lines{margin-top:12px}
+    .line{
+      display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
+      border:1px solid var(--border);background:var(--panel-soft);
+      border-radius:16px;padding:10px;margin-top:10px
+    }
+    .lname{font-weight:900;font-size:13px}
+    .lmeta{font-size:11px;color:var(--muted);margin-top:4px}
+    .qty{
+      min-width:48px;text-align:right;font-weight:900;color:var(--muted)
+    }
+    .price{
+      min-width:84px;text-align:right;font-weight:900;color:var(--ink)
+    }
+    .totals{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+    .totrow{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-weight:800}
+    .totrow strong{font-weight:900}
+    .muted{color:var(--muted);font-size:12px}
+    .notice{
+      border:1px dashed #cbd5e1;background:#f8fafc;color:#0f172a;
+      border-radius:16px;padding:12px;margin-top:12px
+    }
+    footer{margin:16px 0 10px;text-align:center;color:var(--muted);font-weight:800;font-size:12px}
+
+    /* Print styles */
+    @media print{
+      body{background:#fff}
+      .wrap{margin:0;max-width:none}
+      .btn, .pill, footer{display:none!important}
+      .card{box-shadow:none;border:none;border-radius:0}
+      .top{padding:0 0 10px 0}
+      .body{padding:0}
+      .box, .line{break-inside:avoid}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="brand">
+          <div class="logo" id="logoBox"><span id="logoFallback">L</span><img id="logoImg" alt="Logo" style="display:none"/></div>
+          <div>
+            <h1 id="brandName">Receipt</h1>
+            <div class="sub" id="metaLine">—</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          <span class="pill"><span class="dot warn" id="statusDot"></span><span id="statusText">Loading…</span></span>
+          <button class="btn primary" id="btnPrint">Print / Save PDF</button>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="grid2">
+          <div class="box">
+            <div class="k">Order</div>
+            <div class="v" id="orderNo">—</div>
+            <div class="muted" id="orderTime">—</div>
+          </div>
+          <div class="box">
+            <div class="k">Payment</div>
+            <div class="v" id="payMethod">—</div>
+            <div class="muted" id="payTime">—</div>
+          </div>
+        </div>
+
+        <div class="lines" id="lines"></div>
+
+        <div class="totals">
+          <div class="totrow"><span>Subtotal</span><strong id="tSubtotal">0.00</strong></div>
+          <div class="totrow"><span>Discount</span><strong id="tDiscount">0.00</strong></div>
+          <div class="totrow"><span>Service</span><strong id="tService">0.00</strong></div>
+          <div class="totrow"><span>Tax</span><strong id="tTax">0.00</strong></div>
+          <div class="totrow" style="font-size:16px"><span>Total</span><strong id="tTotal">0.00</strong></div>
+        </div>
+
+        <div class="notice" id="notesBox" style="display:none">
+          <div style="font-weight:900;margin-bottom:6px">Notes</div>
+          <div class="muted" id="orderNoteText"></div>
+        </div>
+
+        <div class="notice" id="errBox" style="display:none;border-style:solid;border-color:#fecaca;background:#fef2f2;color:#991b1b">
+          <div style="font-weight:900;margin-bottom:6px">Couldn’t load receipt</div>
+          <div class="muted" id="errText" style="color:#991b1b"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Powered by Luma</footer>
+  </div>
+
+  <script type="module">
+    // ================== Firebase config (PASTE YOUR CREDENTIALS HERE) ==================
+    const firebaseConfig = {
+      apiKey:"AIzaSyA80bAAGPuyscnTVS-zwrxE9Jp3tPiS1gM",
+      authDomain:"events-339ce.firebaseapp.com",
+      databaseURL:"https://events-339ce-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:"events-339ce",
+      storageBucket:"events-339ce.firebasestorage.app",
+      messagingSenderId:"175601544315",
+      appId:"1:175601544315:web:00c94b4affa972b3a286de"
+    };
+    // ==================================================================================
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const $ = (id)=>document.getElementById(id);
+    const money = (n)=> (Number(n||0)).toFixed(2);
+
+    function qp(name){
+      const u = new URL(location.href);
+      return u.searchParams.get(name) || "";
+    }
+
+    function fmtTs(ts){
+      try{
+        if(!ts) return "—";
+        // Firestore Timestamp -> Date
+        const d = ts.toDate ? ts.toDate() : (ts.seconds ? new Date(ts.seconds*1000) : new Date(ts));
+        return d.toLocaleString();
+      }catch(e){ return "—"; }
+    }
+
+    function setStatus(status){
+      const s = String(status||"").toLowerCase();
+      let dot = "warn", text = status || "—";
+      if(s === "completed"){ dot="ok"; text="Completed"; }
+      else if(s === "preparing"){ dot="warn"; text="Preparing"; }
+      else if(s === "cancelled"){ dot="bad"; text="Cancelled"; }
+      $("statusDot").className = "dot " + dot;
+      $("statusText").textContent = text;
+    }
+
+    function lineItemRow(it){
+      const wrap = document.createElement("div");
+      wrap.className = "line";
+      const left = document.createElement("div");
+      left.style.flex = "1";
+      const name = document.createElement("div");
+      name.className = "lname";
+      name.textContent = (it.name || "Item");
+      const meta = document.createElement("div");
+      meta.className = "lmeta";
+      const pieces = [];
+      if(it.note) pieces.push("Note: " + it.note);
+      if(it.price != null) pieces.push("Unit: " + money(it.price));
+      meta.textContent = pieces.join(" • ") || "—";
+      left.appendChild(name);
+      left.appendChild(meta);
+
+      const qty = document.createElement("div");
+      qty.className = "qty";
+      qty.textContent = "× " + String(it.qty ?? 1);
+
+      const price = document.createElement("div");
+      price.className = "price";
+      const lineTotal = Number(it.qty||1) * Number(it.price||0);
+      price.textContent = money(lineTotal);
+
+      wrap.appendChild(left);
+      wrap.appendChild(qty);
+      wrap.appendChild(price);
+      return wrap;
+    }
+
+    async function load(){
+      const brandId = qp("brandId");
+      const orderId = qp("orderId");
+
+      // meta line (no extra params beyond receipt)
+      $("metaLine").textContent = `brandId: ${brandId || "—"} • orderId: ${orderId || "—"}`;
+
+      if(!brandId || !orderId){
+        $("errBox").style.display = "block";
+        $("errText").textContent = "Missing URL params. Use: receipt.html?brandId=YOUR_BRAND_ID&orderId=ORDER_ID";
+        setStatus("—");
+        return;
+      }
+
+      try{
+        const orderRef = doc(db, `brands/${brandId}/orders/${orderId}`);
+        const snap = await getDoc(orderRef);
+        if(!snap.exists()){
+          $("errBox").style.display = "block";
+          $("errText").textContent = "Order not found.";
+          setStatus("—");
+          return;
+        }
+
+        const o = snap.data() || {};
+
+        // Brand
+        const bName = o.brandName || "Brand";
+        const bLogo = o.brandLogoUrl || "";
+        $("brandName").textContent = bName;
+
+        if(bLogo){
+          $("logoImg").src = bLogo;
+          $("logoImg").style.display = "block";
+          $("logoFallback").style.display = "none";
+        }else{
+          $("logoFallback").textContent = (bName || "L").slice(0,1).toUpperCase();
+        }
+
+        // Order info
+        $("orderNo").textContent = o.orderNo ? `#${o.orderNo}` : `#${orderId.slice(-6).toUpperCase()}`;
+        $("orderTime").textContent = "Created: " + fmtTs(o.timestamps?.createdAt || o.createdAt);
+        $("payMethod").textContent = (o.payment?.method || "—").toString().toUpperCase();
+        $("payTime").textContent = "Paid: " + fmtTs(o.payment?.paidAt);
+        setStatus(o.status || "—");
+
+        // Lines
+        const linesEl = $("lines");
+        linesEl.innerHTML = "";
+        const items = Array.isArray(o.items) ? o.items : [];
+        if(items.length === 0){
+          const empty = document.createElement("div");
+          empty.className = "notice";
+          empty.textContent = "No items found on this order.";
+          linesEl.appendChild(empty);
+        }else{
+          items.forEach(it => linesEl.appendChild(lineItemRow(it)));
+        }
+
+        // Totals
+        const t = o.totals || {};
+        $("tSubtotal").textContent = money(t.subtotal);
+        $("tDiscount").textContent = money(t.discount);
+        $("tService").textContent = money(t.service);
+        $("tTax").textContent = money(t.tax);
+        $("tTotal").textContent = money(t.total);
+
+        // Notes
+        const note = o.orderNote || o.notes || "";
+        if(note){
+          $("notesBox").style.display = "block";
+          $("orderNoteText").textContent = note;
+        }
+
+        // Clean meta line for real receipt view
+        $("metaLine").textContent = `Order ${$("orderNo").textContent} • ${fmtTs(o.timestamps?.createdAt || o.createdAt)}`;
+
+      }catch(err){
+        console.error(err);
+        $("errBox").style.display = "block";
+        $("errText").textContent = (err && err.message) ? err.message : String(err);
+        setStatus("—");
+      }
+    }
+
+    $("btnPrint").addEventListener("click", ()=> window.print());
+    load();
+  </script>
+</body>
+</html>
