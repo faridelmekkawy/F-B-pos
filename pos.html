@@ -4,6 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Luma — POS</title>
+  <link rel="icon" href="data:,">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -254,73 +255,107 @@
       </div>
     </div>
 
-    <!-- AUTH -->
+    <!-- AUTH GATE -->
     <div class="card" id="authCard" style="margin-top:16px;">
       <div class="card-h">
         <div>
-          <h2>Sign in</h2>
-          <div class="mini">Enter <b>Brand ID</b> then sign in as owner (email) or staff (username + PIN).</div>
+          <h2>Sign in to POS</h2>
+          <div class="mini">Use owner (email/password) or staff (username + PIN). Everything is under <code>brands/{brandId}</code>.</div>
         </div>
+        <button class="btn primary" id="btnOpenAuth">Open login</button>
       </div>
       <div class="card-b">
         <div class="row">
           <div class="field" style="min-width:260px;flex:1.2">
             <label>Brand ID</label>
             <input class="input" id="brandId" placeholder="e.g. oudies" autocomplete="off"/>
-            <div class="hint">Firestore base path: <code>brands/{brandId}</code></div>
+            <div class="hint">No URL params. Brand context is selected here then stored locally.</div>
           </div>
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <div class="card" style="flex:1;min-width:320px">
-            <div class="card-h"><h2>Owner login</h2><div class="mini">Email + password (Firebase Auth)</div></div>
-            <div class="card-b">
-              <div class="row">
-                <div class="field">
-                  <label>Email</label>
-                  <input class="input" id="email" placeholder="you@company.com" autocomplete="email"/>
-                </div>
-                <div class="field">
-                  <label>Password</label>
-                  <input class="input" id="password" type="password" placeholder="••••••••" autocomplete="current-password"/>
-                </div>
-              </div>
-              <div class="row" style="margin-top:10px;justify-content:flex-end">
-                <button class="btn" id="btnRegister">Register</button>
-                <button class="btn primary" id="btnLogin">Sign in</button>
-              </div>
-              <div class="hint" id="authMsg" style="margin-top:10px"></div>
-            </div>
-          </div>
-
-          <div class="card" style="flex:1;min-width:320px">
-            <div class="card-h"><h2>Staff login</h2><div class="mini">Username + PIN (from Staff tab)</div></div>
-            <div class="card-b">
-              <div class="row">
-                <div class="field">
-                  <label>Username</label>
-                  <input class="input" id="staffUser" placeholder="e.g. cashier1" autocomplete="off"/>
-                </div>
-                <div class="field">
-                  <label>PIN</label>
-                  <input class="input" id="staffPin" placeholder="4-6 digits" inputmode="numeric" autocomplete="off"/>
-                </div>
-              </div>
-              <div class="row" style="margin-top:10px;justify-content:flex-end">
-                <button class="btn primary" id="btnStaffLogin">Enter POS</button>
-              </div>
-              <div class="hint" id="staffMsg" style="margin-top:10px"></div>
+          <div class="field" style="min-width:240px">
+            <label>Status</label>
+            <div class="pill" style="height:44px;align-items:center;justify-content:flex-start">
+              <span class="dot warn"></span><span id="authMsgInline">Not signed in</span>
             </div>
           </div>
         </div>
 
-        <div class="hint" style="margin-top:12px">
-          If you haven’t created staff yet, do it from the Vendor Dashboard → Staff tab.
+        <div class="hint" style="margin-top:10px">
+          If staff login fails, make sure the staff user is <b>active</b> and PIN matches the dashboard’s hashing method.
         </div>
       </div>
     </div>
 
-    <!-- APP -->
+    <!-- AUTH MODAL -->
+    <div class="drawer" id="authDrawer">
+      <div class="sheet">
+        <div class="sh">
+          <h3>Login</h3>
+          <button class="btn" id="btnCloseAuth">Close</button>
+        </div>
+        <div class="sb">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <div class="chips" id="authTabs">
+              <div class="chip active" data-tab="owner">Owner</div>
+              <div class="chip" data-tab="staff">Staff</div>
+            </div>
+            <div class="hint">Brand: <code id="brandCode">—</code></div>
+          </div>
+
+          <!-- OWNER -->
+          <div id="tabOwner" style="margin-top:12px">
+            <div class="card">
+              <div class="card-h"><h2>Owner login</h2><div class="mini">Firebase Auth (email + password)</div></div>
+              <div class="card-b">
+                <div class="row">
+                  <div class="field">
+                    <label>Email</label>
+                    <input class="input" id="email" placeholder="you@company.com" autocomplete="email"/>
+                  </div>
+                  <div class="field">
+                    <label>Password</label>
+                    <input class="input" id="password" type="password" placeholder="••••••••" autocomplete="current-password"/>
+                  </div>
+                </div>
+                <div class="row" style="margin-top:10px;justify-content:flex-end">
+                  <button class="btn" id="btnRegister">Register</button>
+                  <button class="btn primary" id="btnLogin">Sign in</button>
+                </div>
+                <div class="hint" id="authMsg" style="margin-top:10px"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STAFF -->
+          <div id="tabStaff" class="hidden" style="margin-top:12px">
+            <div class="card">
+              <div class="card-h"><h2>Staff login</h2><div class="mini">Username + PIN (from Vendor Dashboard → Staff)</div></div>
+              <div class="card-b">
+                <div class="row">
+                  <div class="field">
+                    <label>Username</label>
+                    <input class="input" id="staffUser" placeholder="e.g. cashier1" autocomplete="off"/>
+                  </div>
+                  <div class="field">
+                    <label>PIN</label>
+                    <input class="input" id="staffPin" placeholder="4-6 digits" inputmode="numeric" autocomplete="off"/>
+                  </div>
+                </div>
+                <div class="row" style="margin-top:10px;justify-content:flex-end">
+                  <button class="btn primary" id="btnStaffLogin">Enter POS</button>
+                </div>
+                <div class="hint" id="staffMsg" style="margin-top:10px"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hint" style="margin-top:12px">
+            Tip: You can keep this POS open on a cashier tablet. Products and orders sync live.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP --><!-- APP -->
     <div id="app" class="hidden">
       <div class="grid">
 
@@ -513,6 +548,8 @@
       dot.classList.remove("ok","warn","bad");
       dot.classList.add(state);
       $("authPillText").textContent = text;
+      const inline = document.getElementById("authMsgInline");
+      if(inline) inline.textContent = text;
     }
     function needBrandId(){
       const bid = ($("brandId").value||"").trim();
@@ -822,6 +859,8 @@
         startProductsListener();
         renderCart();
         toast("Welcome", `${u} • ${ROLE}`);
+        openDrawer("authDrawer", false);
+        document.getElementById("authMsgInline").textContent = `Ready • ${ROLE}`;
         $("staffMsg").textContent="";
       }catch(e){
         console.error(e);
@@ -963,7 +1002,7 @@
         }
       };
 
-      $("btnPay").disabled = True = true;
+      $("btnPay").disabled = true;
       try{
         const { ordersCol, runtimeCustomerDoc } = basePaths(BRAND_ID);
         const ref = await addDoc(ordersCol, order);
@@ -1002,6 +1041,32 @@
       const d = $(id);
       d.style.display = yes ? "flex" : "none";
     }
+
+    // ---------- Auth modal (login) ----------
+    function syncAuthModalBrand(){
+      const bid = (document.getElementById("brandId").value||"").trim();
+      const bc = document.getElementById("brandCode");
+      if(bc) bc.textContent = bid || "—";
+    }
+    document.getElementById("brandId").addEventListener("input", ()=>{
+      syncAuthModalBrand();
+      document.getElementById("authMsgInline").textContent = "Not signed in";
+    });
+
+    document.getElementById("btnOpenAuth").onclick = ()=>{
+      syncAuthModalBrand();
+      openDrawer("authDrawer", true);
+    };
+    document.getElementById("btnCloseAuth").onclick = ()=> openDrawer("authDrawer", false);
+
+    document.getElementById("authTabs").onclick = (e)=>{
+      const tab = e.target.closest(".chip")?.getAttribute("data-tab");
+      if(!tab) return;
+      document.querySelectorAll("#authTabs .chip").forEach(x=>x.classList.remove("active"));
+      e.target.closest(".chip").classList.add("active");
+      document.getElementById("tabOwner").classList.toggle("hidden", tab!=="owner");
+      document.getElementById("tabStaff").classList.toggle("hidden", tab!=="staff");
+    };
     $("btnOpenProducts").onclick = ()=> openDrawer("productsDrawer", true);
     $("btnCloseProducts").onclick = ()=> openDrawer("productsDrawer", false);
     $("btnOpenRecent").onclick = ()=> { openDrawer("recentDrawer", true); refreshRecent(); };
@@ -1185,6 +1250,8 @@
       showApp(false);
       setBrandHeader();
       toast("Signed out","See you.");
+      openDrawer("authDrawer", false);
+      const inline = document.getElementById("authMsgInline"); if(inline) inline.textContent="Not signed in";
     };
 
     // ---------- boot ----------
