@@ -233,6 +233,9 @@
         const brandId = getBrandId();
         await updateDoc(doc(db, `brands/${brandId}/orders/${id}`),{
           status:"completed",
+          "timestamps.completedAt": serverTimestamp(),
+          "timestamps.updatedAt": serverTimestamp(),
+          // Keep legacy fields if your other screens use them
           completedAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
@@ -289,7 +292,7 @@
     const qPrep = query(
       collection(db, `brands/${brandId}/orders`),
       where("status","==","preparing"),
-      orderBy("createdAt","asc"),
+      orderBy("timestamps.createdAt","asc"),
       limit(200)
     );
     unsubPrep = onSnapshot(qPrep, snap=>{
@@ -307,7 +310,7 @@
     const qDone = query(
       collection(db, `brands/${brandId}/orders`),
       where("status","==","completed"),
-      orderBy("completedAt","desc"),
+      orderBy("timestamps.completedAt","desc"),
       limit(200)
     );
     unsubDone = onSnapshot(qDone, snap=>{
