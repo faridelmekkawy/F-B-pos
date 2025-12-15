@@ -119,10 +119,13 @@
     .btn-danger:hover{background:#b91c1c;}
 
     .auth-footer{text-align:center;margin-top:8px;font-size:10px;color:var(--muted);}
-/* =========================================================
-   VENDOR DASHBOARD UI FIX PACK (Brand-style)
-   Paste this block at the END of <style> before </style>
-   ========================================================= */
+.fileRow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.pillInput{display:flex;gap:6px;align-items:center;background:var(--panel-soft);border:1px solid var(--border);padding:6px 10px;border-radius:999px}
+@media print{
+  body *{visibility:hidden!important;}
+  #page-reports, #page-reports *{visibility:visible!important;}
+  #page-reports{position:absolute;left:0;top:0;width:100%;}
+}
 
 /* utility */
 .hidden{display:none!important;}
@@ -1066,7 +1069,7 @@ body{background:var(--bg)!important;}
 
 <!-- Chart.js (required for charts) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module">
 
   /**************************************************************
@@ -1451,7 +1454,8 @@ const $ = (id)=>{
     // Header names
     const sbn = document.getElementById("sidebar-brand-name");
     if(sbn) sbn.textContent = BRAND?.name || "Brand";
-    const tbt = document.getElementById("topbar-brand-title");
+const tbt = document.getElementById("brandTitle");
+if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand Dashboard";
     if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand Dashboard";
 
     await heal();
@@ -2683,24 +2687,6 @@ $("btnReportExec").onclick = ()=>{ showPage("reports"); window.print(); };
    * 20) Print button
    **************************************************************/
   $("btnPrint").onclick = ()=> window.print();
-
-
-// --- Brand-style sidebar -> vendor page switching ---
-(() => {
-  const nav = document.getElementById("sidebarNav");
-  if(!nav) return;
-  nav.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-vpage]");
-    if(!btn) return;
-    const key = btn.getAttribute("data-vpage");
-    try{
-      // vendor showPage expects keys like overview/orders/etc; if not present, fall back to dashboard
-      if(typeof showPage === "function") showPage(key);
-    }catch(_){}
-    nav.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-  });
-})();
 
 </script>
 </body>
