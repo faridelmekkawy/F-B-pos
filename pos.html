@@ -529,7 +529,14 @@
       };
     }
 
-    // ---------- state ----------
+    
+    async function sha256Hex(str){
+      const enc = new TextEncoder();
+      const data = enc.encode(String(str));
+      const hash = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    }
+// ---------- state ----------
     let BRAND_ID = "";
     let BRAND = null; // {name, logoUrl}
     let ROLE = "owner"; // owner|cashier
@@ -792,7 +799,15 @@
         if(qs.empty){ $("staffMsg").textContent="User not found."; return; }
         const docu = qs.docs[0];
         const data = docu.data() || {};
-        const ok = String(data.pin||"") === String(pin) && data.active !== false;
+        let ok = false;
+        // Dashboard creates staff with pinHash (SHA-256). Support both pinHash and legacy pin.
+        if(data.pinHash){
+          const enteredHash = await sha256Hex(pin);
+          ok = String(data.pinHash) === String(enteredHash);
+        }else{
+          ok = String(data.pin||"") === String(pin);
+        }
+        ok = ok && data.active !== false;
         if(!ok){ $("staffMsg").textContent="Invalid PIN or inactive user."; return; }
 
         ROLE = (data.role || "cashier");
