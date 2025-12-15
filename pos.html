@@ -79,6 +79,25 @@
     .btn.danger{background:#fff;border-color:#fecaca;color:#b91c1c}
     .btn.ghost{background:transparent}
     .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+    .miniBtn{
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--border);
+      background:var(--panel-soft);
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .miniBtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .miniBtn.danger{background:#fff;border-color:#fecaca;color:#b91c1c}
+    .miniBtn:hover{border-color:#d1d5db}
+    .rActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    @media (max-width: 520px){
+      .rActions{flex-direction:column;align-items:stretch}
+      .rActions .miniBtn{width:100%}
+    }
+
     .grid{
       display:grid;grid-template-columns: 1.6fr .9fr;
       gap:16px;margin-top:16px;
@@ -250,6 +269,7 @@
 
       <div class="actions">
         <button class="btn" id="btnOpenProducts">Products</button>
+        <button class="btn" id="btnOpenSettings">Settings</button>
         <button class="btn" id="btnOpenRecent">Recent orders</button>
         <button class="btn ghost" id="btnSignOut">Sign out</button>
       </div>
@@ -391,19 +411,27 @@
             <div id="cartEmpty" class="empty">Tap items from the menu to add them here.</div>
 
             <div class="row" style="margin-top:12px">
-              <div class="field" style="min-width:140px">
-                <label>Discount</label>
+              <div class="field" style="min-width:160px">
+                <label>Discount (%)</label>
                 <input class="input" id="discount" placeholder="0" inputmode="decimal"/>
               </div>
-              <div class="field" style="min-width:140px">
-                <label>Tax</label>
-                <input class="input" id="tax" placeholder="0" inputmode="decimal"/>
+              <div class="field" style="min-width:200px">
+                <label>Charges (from settings)</label>
+                <div class="pill" style="height:44px;align-items:center;justify-content:flex-start">
+                  <span class="dot ok"></span>
+                  <span><b>Tax</b>: <span id="taxRateLabel">0%</span> • <b>Service</b>: <span id="serviceRateLabel">0%</span></span>
+                </div>
+                <div class="hint">Change these in <b>Settings</b>.</div>
               </div>
-              <div class="field" style="min-width:180px;flex:1.4">
+              <div class="field" style="min-width:220px;flex:1.4">
                 <label>Customer name (optional)</label>
                 <input class="input" id="customerName" placeholder="Walk-in"/>
               </div>
             </div>
+
+            <!-- hidden (kept for compatibility with calc function variables) -->
+            <input class="hidden" id="tax" value="0"/>
+            <input class="hidden" id="service" value="0"/>
 
             <div class="field" style="margin-top:10px">
               <label>Kitchen note (order-level)</label>
@@ -413,6 +441,7 @@
             <div class="totals">
               <div class="totrow"><span>Subtotal</span><strong id="tSubtotal">0.00</strong></div>
               <div class="totrow"><span>Discount</span><strong id="tDiscount">0.00</strong></div>
+              <div class="totrow"><span>Service</span><strong id="tService">0.00</strong></div>
               <div class="totrow"><span>Tax</span><strong id="tTax">0.00</strong></div>
               <div class="totrow" style="font-size:15px"><span>Total</span><strong id="tTotal">0.00</strong></div>
             </div>
@@ -481,7 +510,44 @@
     </div>
   </div>
 
-  <!-- RECENT ORDERS DRAWER -->
+  
+  <!-- SETTINGS DRAWER -->
+  <div class="drawer" id="settingsDrawer">
+    <div class="sheet">
+      <div class="sh">
+        <h3>POS Settings</h3>
+        <button class="btn" id="btnCloseSettings">Close</button>
+      </div>
+      <div class="sb">
+        <div class="card">
+          <div class="card-h">
+            <div>
+              <h2>Taxes & service</h2>
+              <div class="mini">Stored at <code>brands/{brandId}/settings/pos</code></div>
+            </div>
+          </div>
+          <div class="card-b">
+            <div class="row">
+              <div class="field">
+                <label>Tax rate (%)</label>
+                <input class="input" id="setTaxRate" placeholder="e.g. 14" inputmode="decimal"/>
+              </div>
+              <div class="field">
+                <label>Service rate (%)</label>
+                <input class="input" id="setServiceRate" placeholder="e.g. 12" inputmode="decimal"/>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;justify-content:flex-end;gap:10px">
+              <button class="btn" id="btnResetSettings">Reset</button>
+              <button class="btn primary" id="btnSaveSettings">Save settings</button>
+            </div>
+            <div class="hint" id="settingsMsg" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- RECENT ORDERS DRAWER -->
   <div class="drawer" id="recentDrawer">
     <div class="sheet">
       <div class="sh">
@@ -498,7 +564,91 @@
     </div>
   </div>
 
-  <div class="toast" id="toast">
+  
+  <!-- CHECKOUT MODAL -->
+  <div class="drawer" id="checkoutDrawer">
+    <div class="sheet">
+      <div class="sh">
+        <h3>Checkout</h3>
+        <button class="btn" id="btnCloseCheckout">Close</button>
+      </div>
+      <div class="sb">
+        <div class="card">
+          <div class="card-h">
+            <div>
+              <h2>Order summary</h2>
+              <div class="mini" id="coMeta">—</div>
+            </div>
+          </div>
+          <div class="card-b">
+            <div id="coLines"></div>
+            <div class="totals" style="margin-top:12px">
+              <div class="totrow"><span>Subtotal</span><strong id="coSubtotal">0.00</strong></div>
+              <div class="totrow"><span>Discount</span><strong id="coDiscount">0.00</strong></div>
+              <div class="totrow"><span>Service</span><strong id="coService">0.00</strong></div>
+              <div class="totrow"><span>Tax</span><strong id="coTax">0.00</strong></div>
+              <div class="totrow" style="font-size:16px"><span>Total</span><strong id="coTotal">0.00</strong></div>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+              <div class="field">
+                <label>Payment method</label>
+                <div class="paymethods" id="coPayMethods">
+                  <div class="pm active" data-m="cash">Cash</div>
+                  <div class="pm" data-m="card">Card</div>
+                  <div class="pm" data-m="wallet">Wallet</div>
+                </div>
+              </div>
+              <div class="field">
+                <label>Customer (optional)</label>
+                <input class="input" id="coCustomer" placeholder="Walk-in"/>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:10px">
+              <label>Kitchen note (order-level)</label>
+              <textarea id="coOrderNote" placeholder="e.g. extra napkins…"></textarea>
+            </div>
+
+            <div class="row" style="margin-top:12px;justify-content:flex-end;gap:10px">
+              <button class="btn" id="btnEditCart">Back to cart</button>
+              <button class="btn primary" id="btnConfirmPay">Confirm payment</button>
+            </div>
+
+            <div class="hint" id="coHint" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFUND MODAL -->
+  <div class="drawer" id="refundDrawer">
+    <div class="sheet">
+      <div class="sh">
+        <h3>Refund</h3>
+        <button class="btn" id="btnCloseRefund">Close</button>
+      </div>
+      <div class="sb">
+        <div class="hint" id="rfMeta">—</div>
+
+        <div class="row" style="margin-top:10px;gap:8px">
+          <div class="chip active" id="rfModeFull">Full order</div>
+          <div class="chip" id="rfModeItems">By items</div>
+        </div>
+
+        <div id="rfItemsWrap" class="hidden" style="margin-top:12px"></div>
+
+        <div class="row" style="margin-top:14px;justify-content:flex-end;gap:10px">
+          <button class="btn" id="btnCancelRefund">Cancel</button>
+          <button class="btn primary" id="btnConfirmRefund">Confirm refund</button>
+        </div>
+
+        <div class="hint" id="rfHint" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+<div class="toast" id="toast">
     <div class="t" id="toastT">Saved</div>
     <div class="m" id="toastM">Done</div>
   </div>
@@ -511,7 +661,7 @@
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, orderBy, limit,
-      getDocs, onSnapshot, serverTimestamp
+      getDocs, onSnapshot, serverTimestamp, runTransaction
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import {
       getStorage, ref as sRef, uploadBytes, getDownloadURL
@@ -562,7 +712,9 @@
         productsCol: collection(db, `brands/${brandId}/products`),
         ordersCol: collection(db, `brands/${brandId}/orders`),
         staffCol: collection(db, `brands/${brandId}/staff`),
-        runtimeCustomerDoc: doc(db, `brands/${brandId}/runtime/customerDisplay`)
+        runtimeCustomerDoc: doc(db, `brands/${brandId}/runtime/customerDisplay`),
+        settingsPosDoc: doc(db, `brands/${brandId}/settings/pos`),
+        countersDoc: doc(db, `brands/${brandId}/counters/orders`)
       };
     }
 
@@ -583,6 +735,7 @@
     let SEARCH = "";
     let CART = []; // {productId,name,price,qty,note}
     let PAY_METHOD = "cash";
+    let POS_SETTINGS = { taxRate: 0, serviceRate: 0 };
 
     // ---------- UI: basics ----------
     function showApp(yes){
@@ -612,12 +765,17 @@
 
     function recalc(){
       const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
-      const discount = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
-      const tax = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
-      const total = Math.max(0, subtotal - discount + tax);
+      const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
+      const discount = subtotal * (discountPct/100);
+      const taxRate = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
+      const serviceRate = Math.max(0, Number(($("service").value||"0").replace(",",".")) || 0);
+      const service = Math.max(0, (subtotal - discount) * (serviceRate/100));
+      const tax = Math.max(0, (subtotal - discount + service) * (taxRate/100));
+      const total = Math.max(0, subtotal - discount + service + tax);
 
       $("tSubtotal").textContent = money(subtotal);
       $("tDiscount").textContent = money(discount);
+      $("tService").textContent = money(service);
       $("tTax").textContent = money(tax);
       $("tTotal").textContent = money(total);
 
@@ -737,14 +895,27 @@
     let unsubProducts = null;
 
     async function ensureBrandShell(brandId){
-      const { brandDoc, runtimeCustomerDoc } = basePaths(brandId);
+      
+      const { brandDoc, runtimeCustomerDoc, settingsPosDoc, countersDoc } = basePaths(brandId);
+
       const bSnap = await getDoc(brandDoc);
       if(!bSnap.exists()){
         await setDoc(brandDoc, {
           name: brandId,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
-        }, { merge:true });
+        
+      const sSnap = await getDoc(settingsPosDoc);
+      if(!sSnap.exists()){
+        await setDoc(settingsPosDoc, { taxRate: 0, serviceRate: 0, updatedAt: serverTimestamp() }, { merge:true });
+      }
+
+      const cSnap = await getDoc(countersDoc);
+      if(!cSnap.exists()){
+        await setDoc(countersDoc, { nextOrderNo: 1000, updatedAt: serverTimestamp() }, { merge:true });
+      }
+
+    }, { merge:true });
       }else{
         await updateDoc(brandDoc, { updatedAt: serverTimestamp() }).catch(()=>{});
       }
@@ -760,6 +931,31 @@
 
     async function loadBrand(brandId){
       const { brandDoc } = basePaths(brandId);
+
+    async function loadPosSettings(){
+      const { settingsPosDoc } = basePaths(BRAND_ID);
+      const snap = await getDoc(settingsPosDoc);
+      const data = snap.exists() ? (snap.data()||{}) : {};
+      POS_SETTINGS = {
+        taxRate: Number(data.taxRate||0),
+        serviceRate: Number(data.serviceRate||0)
+      };
+      // store into hidden inputs for calculator
+      document.getElementById("tax").value = String(POS_SETTINGS.taxRate||0);
+      document.getElementById("service").value = String(POS_SETTINGS.serviceRate||0);
+      const tl = document.getElementById("taxRateLabel");
+      const sl = document.getElementById("serviceRateLabel");
+      if(tl) tl.textContent = `${POS_SETTINGS.taxRate||0}%`;
+      if(sl) sl.textContent = `${POS_SETTINGS.serviceRate||0}%`;
+
+      // settings drawer inputs
+      const st = document.getElementById("setTaxRate");
+      const ss = document.getElementById("setServiceRate");
+      if(st) st.value = String(POS_SETTINGS.taxRate||0);
+      if(ss) ss.value = String(POS_SETTINGS.serviceRate||0);
+
+      recalc();
+    }
       const snap = await getDoc(brandDoc);
       BRAND = snap.exists() ? snap.data() : {name:brandId};
       setBrandHeader();
@@ -830,6 +1026,7 @@
         BRAND_ID = bid;
         await ensureBrandShell(BRAND_ID);
         await loadBrand(BRAND_ID);
+        await loadPosSettings();
 
         const { staffCol } = basePaths(BRAND_ID);
         const qs = await getDocs(query(staffCol, where("username","==",u), limit(1)));
@@ -882,6 +1079,7 @@
           STAFF = JSON.parse(staff);
           await ensureBrandShell(BRAND_ID);
           await loadBrand(BRAND_ID);
+          await loadPosSettings();
           setPill("ok", `Ready • ${ROLE}`);
           showApp(true);
           startProductsListener();
@@ -952,55 +1150,165 @@
     };
 
     $("discount").oninput = recalc;
-    $("tax").oninput = recalc;
+    // $("tax").oninput = recalc; // tax is from settings
+
     $("search").oninput = ()=>{ SEARCH = $("search").value; renderProducts(); };
 
-    $("btnPay").onclick = async ()=>{
+    $("btnPay").onclick = ()=>{
+      if(!BRAND_ID){ toast("Not ready","Sign in first."); return; }
+      if(CART.length===0){ toast("Empty cart","Add items first."); return; }
+      openCheckout();
+    };
+
+    function openCheckout(){
+      // mirror current cart fields into checkout modal
+      $("coCustomer").value = $("customerName").value || "";
+      $("coOrderNote").value = $("orderNote").value || "";
+      // payment method mirror
+      document.querySelectorAll("#coPayMethods .pm").forEach(x=>x.classList.remove("active"));
+      const active = document.querySelector(`#coPayMethods .pm[data-m="${PAY_METHOD}"]`);
+      if(active) active.classList.add("active");
+
+      renderCheckoutSummary();
+      openDrawer("checkoutDrawer", true);
+    }
+
+    function renderCheckoutSummary(){
+      const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
+      const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
+      const discount = subtotal * (discountPct/100);
+      const taxRate = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
+      const serviceRate = Math.max(0, Number(($("service").value||"0").replace(",",".")) || 0);
+      const service = Math.max(0, (subtotal - discount) * (serviceRate/100));
+      const tax = Math.max(0, (subtotal - discount + service) * (taxRate/100));
+      const total = Math.max(0, subtotal - discount + service + tax);
+
+      $("coMeta").textContent = `${CART.reduce((s,l)=>s+Number(l.qty||0),0)} items`;
+      $("coSubtotal").textContent = money(subtotal);
+      $("coDiscount").textContent = money(discount);
+      $("coService").textContent = money(service);
+      $("coTax").textContent = money(tax);
+      $("coTotal").textContent = money(total);
+
+      const lines = $("coLines");
+      lines.innerHTML = "";
+      for(const l of CART){
+        const row = document.createElement("div");
+        row.className = "totrow";
+        row.innerHTML = `<span>${escapeHtml(l.qty)}× ${escapeHtml(l.name)}${l.note?` <span class="hint">(${escapeHtml(l.note)})</span>`:""}</span><strong>${money(l.price*l.qty)}</strong>`;
+        lines.appendChild(row);
+      }
+      $("coHint").textContent = "";
+    }
+
+    $("coPayMethods").onclick = (e)=>{
+      const el = e.target.closest(".pm");
+      if(!el) return;
+      PAY_METHOD = el.getAttribute("data-m");
+      document.querySelectorAll("#coPayMethods .pm").forEach(x=>x.classList.remove("active"));
+      el.classList.add("active");
+    };
+
+    $("btnCloseCheckout").onclick = ()=> { $("customerName").value = $("coCustomer").value; $("orderNote").value = $("coOrderNote").value; openDrawer("checkoutDrawer", false); };
+    $("btnEditCart").onclick = ()=> openDrawer("checkoutDrawer", false);
+
+    $("btnConfirmPay").onclick = async ()=>{
       if(!BRAND_ID){ toast("Not ready","Sign in first."); return; }
       if(CART.length===0){ toast("Empty cart","Add items first."); return; }
 
       const subtotal = CART.reduce((s,l)=> s + (Number(l.price||0)*Number(l.qty||0)), 0);
-      const discount = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
-      const tax = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
-      const total = Math.max(0, subtotal - discount + tax);
+      const discountPct = Math.max(0, Number(($("discount").value||"0").replace(",",".")) || 0);
+      const discount = subtotal * (discountPct/100);
+      const taxRate = Math.max(0, Number(($("tax").value||"0").replace(",",".")) || 0);
+      const serviceRate = Math.max(0, Number(($("service").value||"0").replace(",",".")) || 0);
+      const service = Math.max(0, (subtotal - discount) * (serviceRate/100));
+      const tax = Math.max(0, (subtotal - discount + service) * (taxRate/100));
+      const total = Math.max(0, subtotal - discount + service + tax);
 
-      const order = {
-        brandId: BRAND_ID,
-        brandName: BRAND?.name || BRAND_ID,
-        brandLogoUrl: BRAND?.logoUrl || "",
-        status: "preparing",
-        items: CART.map(l=>({
-          productId: l.productId,
-          name: l.name,
-          qty: Number(l.qty||0),
-          price: Number(l.price||0),
-          note: (l.note||"").trim() || null
-        })),
-        orderNote: ($("orderNote").value||"").trim() || null,
-        customerName: ($("customerName").value||"").trim() || null,
-        totals: {
-          subtotal: Number(subtotal.toFixed(2)),
-          discount: Number(discount.toFixed(2)),
-          tax: Number(tax.toFixed(2)),
-          total: Number(total.toFixed(2))
-        },
-        payment: {
-          method: PAY_METHOD,
-          paidAt: serverTimestamp()
-        },
-        meta: {
-          source: "pos",
-          role: ROLE,
-          staffUsername: STAFF?.username || null,
-          createdAtISO: nowISO()
-        },
-        timestamps: {
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          completedAt: null,
-          cancelledAt: null
-        }
-      };
+      $("btnConfirmPay").disabled = true;
+      $("coHint").textContent = "Processing…";
+      try{
+        const { ordersCol, runtimeCustomerDoc, countersDoc } = basePaths(BRAND_ID);
+
+        // Allocate sequential orderNo (1001, 1002, ...)
+        const { orderNo, nextNo } = await runTransaction(db, async (tx)=>{
+          const cs = await tx.get(countersDoc);
+          let next = 1000;
+          if(cs.exists()){
+            next = Number(cs.data()?.nextOrderNo||1000);
+          }
+          const newNo = next + 1;
+          tx.set(countersDoc, { nextOrderNo: newNo, updatedAt: serverTimestamp() }, { merge:true });
+          return { orderNo: newNo, nextNo: newNo };
+        });
+
+        const order = {
+          brandId: BRAND_ID,
+          orderNo: orderNo,
+          brandName: BRAND?.name || BRAND_ID,
+          brandLogoUrl: BRAND?.logoUrl || "",
+          status: "preparing",
+          items: CART.map(l=>({
+            productId: l.productId,
+            name: l.name,
+            qty: Number(l.qty||0),
+            price: Number(l.price||0),
+            note: (l.note||"").trim() || null
+          })),
+          orderNote: ($("coOrderNote").value||"").trim() || null,
+          customerName: ($("coCustomer").value||"").trim() || null,
+          totals: {
+            subtotal: Number(subtotal.toFixed(2)),
+            discountPct: Number(discountPct.toFixed(2)),
+            discount: Number(discount.toFixed(2)),
+            serviceRate: Number(serviceRate.toFixed(2)),
+            service: Number(service.toFixed(2)),
+            taxRate: Number(taxRate.toFixed(2)),
+            tax: Number(tax.toFixed(2)),
+            total: Number(total.toFixed(2))
+          },
+          payment: { method: PAY_METHOD, paidAt: serverTimestamp() },
+          meta: {
+            source: "pos",
+            role: ROLE,
+            staffUsername: STAFF?.username || null,
+            createdAtISO: nowISO()
+          },
+          timestamps: {
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            completedAt: null,
+            cancelledAt: null
+          }
+        };
+
+        const ref = await addDoc(ordersCol, order);
+
+        await setDoc(runtimeCustomerDoc, {
+          lastPaidOrderId: ref.id,
+          lastPaidAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge:true });
+
+        const receiptUrl = `receipt.html?brandId=${encodeURIComponent(BRAND_ID)}&orderId=${encodeURIComponent(ref.id)}`;
+        $("afterPayHint").innerHTML = `✅ Order <b>#${orderNo}</b> sent. Receipt: <code>${escapeHtml(receiptUrl)}</code>`;
+        toast("Paid & sent to kitchen", `Order #${orderNo}`);
+
+        // Reset cart
+        CART = [];
+        $("discount").value = "";
+        $("customerName").value = "";
+        $("orderNote").value = "";
+        renderCart();
+        openDrawer("checkoutDrawer", false);
+      }catch(e){
+        console.error(e);
+        toast("Payment failed", e?.message || "Could not create order.");
+        $("coHint").textContent = e?.message || "Failed.";
+      }finally{
+        $("btnConfirmPay").disabled = false;
+      }
+    };
 
       $("btnPay").disabled = true;
       try{
@@ -1036,7 +1344,34 @@
       }
     };
 
-    // ---------- Products manager ----------
+    
+    $("btnResetSettings").onclick = ()=>{
+      $("setTaxRate").value = String(POS_SETTINGS.taxRate||0);
+      $("setServiceRate").value = String(POS_SETTINGS.serviceRate||0);
+      $("settingsMsg").textContent = "";
+    };
+
+    $("btnSaveSettings").onclick = async ()=>{
+      if(!BRAND_ID){ toast("Not ready","Sign in first."); return; }
+      const taxRate = Math.max(0, Number(($("setTaxRate").value||"0").replace(",",".")) || 0);
+      const serviceRate = Math.max(0, Number(($("setServiceRate").value||"0").replace(",",".")) || 0);
+      $("btnSaveSettings").disabled = true;
+      $("settingsMsg").textContent = "Saving…";
+      try{
+        const { settingsPosDoc } = basePaths(BRAND_ID);
+        await setDoc(settingsPosDoc, { taxRate, serviceRate, updatedAt: serverTimestamp() }, { merge:true });
+        toast("Settings saved", `Tax ${taxRate}% • Service ${serviceRate}%`);
+        $("settingsMsg").textContent = "✅ Saved";
+        await loadPosSettings();
+      }catch(e){
+        console.error(e);
+        $("settingsMsg").textContent = e?.message || "Save failed.";
+      }finally{
+        $("btnSaveSettings").disabled = false;
+      }
+    };
+
+// ---------- Products manager ----------
     function openDrawer(id, yes){
       const d = $(id);
       d.style.display = yes ? "flex" : "none";
@@ -1070,7 +1405,9 @@
     $("btnOpenProducts").onclick = ()=> openDrawer("productsDrawer", true);
     $("btnCloseProducts").onclick = ()=> openDrawer("productsDrawer", false);
     $("btnOpenRecent").onclick = ()=> { openDrawer("recentDrawer", true); refreshRecent(); };
+    $("btnOpenSettings").onclick = ()=> { openDrawer("settingsDrawer", true); };
     $("btnCloseRecent").onclick = ()=> openDrawer("recentDrawer", false);
+    $("btnCloseSettings").onclick = ()=> openDrawer("settingsDrawer", false);
 
     $("btnClearP").onclick = ()=>{
       $("pName").value=""; $("pCat").value=""; $("pPrice").value=""; $("pDesc").value=""; $("pImg").value="";
@@ -1160,14 +1497,14 @@
           card.className = "line";
           card.innerHTML = `
             <div>
-              <div class="title">#${escapeHtml(id)}</div>
-              <div class="sub">${escapeHtml(status)} • ${money(total)} EGP • ${escapeHtml(pm)}</div>
+              <div class="title">#${escapeHtml(String(o.orderNo||id))}</div>
+              <div class="sub">${escapeHtml(status)} • ${money(total)} EGP • ${escapeHtml(pm)}${o.customerName?` • ${escapeHtml(o.customerName)}`:``}</div>
               <div class="hint" style="margin-top:6px">${escapeHtml((o.items||[]).map(x=>`${x.qty}× ${x.name}`).join(" • ") || "")}</div>
             </div>
-            <div class="qty">
-              <button class="btn" data-open="${id}">Receipt</button>
-              <button class="btn danger" data-cancel="${id}" ${status==="cancelled"?"disabled":""}>Cancel</button>
-              <button class="btn" data-refund="${id}">Refund</button>
+            <div class="rActions">
+              <button class="miniBtn" data-open="${id}">Receipt</button>
+              <button class="miniBtn danger" data-cancel="${id}" ${status==="cancelled"?"disabled":""}>Cancel</button>
+              <button class="miniBtn primary" data-refund="${id}">Refund</button>
             </div>
           `;
           root.appendChild(card);
@@ -1211,13 +1548,145 @@
       }
     }
 
+    let __refundOrder = null;
+    let __refundMode = "full"; // full|items
+
     async function refundOrder(orderId){
-      const amountStr = prompt("Refund amount (blank = full):", "");
-      if(amountStr === null) return;
-      let amount = null;
-      if(String(amountStr||"").trim()!==""){
-        amount = Math.max(0, Number(String(amountStr).replace(",",".")) || 0);
+      try{
+        const orderRef = doc(db, `brands/${BRAND_ID}/orders/${orderId}`);
+        const snap = await getDoc(orderRef);
+        if(!snap.exists()){ toast("Not found","Order missing."); return; }
+        const o = snap.data()||{};
+        __refundOrder = { id: orderId, ref: orderRef, data: o };
+        __refundMode = "full";
+
+        $("rfMeta").textContent = `Refund for Order #${o.orderNo||orderId} • ${money(o.totals?.total||0)} EGP`;
+        $("rfModeFull").classList.add("active");
+        $("rfModeItems").classList.remove("active");
+        $("rfItemsWrap").classList.add("hidden");
+        $("rfItemsWrap").innerHTML = "";
+        $("rfHint").textContent = "";
+
+        // build items UI
+        const items = Array.isArray(o.items) ? o.items : [];
+        const wrap = document.createElement("div");
+        wrap.className = "card";
+        wrap.innerHTML = `<div class="card-h"><h2>Select items</h2><div class="mini">Choose qty to refund per item</div></div><div class="card-b" id="rfItems"></div>`;
+        const itemsBox = wrap.querySelector("#rfItems");
+        for(const it of items){
+          const row = document.createElement("div");
+          row.className = "line";
+          row.innerHTML = `
+            <div>
+              <div class="title">${escapeHtml(it.name||"Item")}</div>
+              <div class="sub">Bought: <b>${escapeHtml(it.qty||0)}</b> • ${money(it.price||0)} EGP</div>
+            </div>
+            <div class="qty">
+              <button data-dec="${escapeAttr(it.productId||it.name)}">−</button>
+              <div class="n" data-n="${escapeAttr(it.productId||it.name)}">0</div>
+              <button data-inc="${escapeAttr(it.productId||it.name)}">+</button>
+            </div>
+          `;
+          row.dataset.pid = (it.productId||it.name);
+          row.dataset.max = String(it.qty||0);
+          itemsBox.appendChild(row);
+        }
+        $("rfItemsWrap").appendChild(wrap);
+
+        // qty handlers
+        $("rfItemsWrap").querySelectorAll("button[data-inc]").forEach(b=>{
+          b.onclick = ()=>{
+            const pid = b.getAttribute("data-inc");
+            const row = b.closest(".line");
+            const max = Number(row.dataset.max||0);
+            const nEl = row.querySelector(`[data-n="${pid}"]`);
+            let n = Number(nEl.textContent||0);
+            n = Math.min(max, n+1);
+            nEl.textContent = String(n);
+          };
+        });
+        $("rfItemsWrap").querySelectorAll("button[data-dec]").forEach(b=>{
+          b.onclick = ()=>{
+            const pid = b.getAttribute("data-dec");
+            const row = b.closest(".line");
+            const nEl = row.querySelector(`[data-n="${pid}"]`);
+            let n = Number(nEl.textContent||0);
+            n = Math.max(0, n-1);
+            nEl.textContent = String(n);
+          };
+        });
+
+        openDrawer("refundDrawer", true);
+      }catch(e){
+        console.error(e);
+        toast("Refund failed", e?.message || "");
       }
+    }
+
+    $("btnCloseRefund").onclick = ()=> openDrawer("refundDrawer", false);
+    $("btnCancelRefund").onclick = ()=> openDrawer("refundDrawer", false);
+
+    $("rfModeFull").onclick = ()=>{
+      __refundMode = "full";
+      $("rfModeFull").classList.add("active");
+      $("rfModeItems").classList.remove("active");
+      $("rfItemsWrap").classList.add("hidden");
+      $("rfHint").textContent = "";
+    };
+    $("rfModeItems").onclick = ()=>{
+      __refundMode = "items";
+      $("rfModeItems").classList.add("active");
+      $("rfModeFull").classList.remove("active");
+      $("rfItemsWrap").classList.remove("hidden");
+      $("rfHint").textContent = "Select quantities to refund, then confirm.";
+    };
+
+    $("btnConfirmRefund").onclick = async ()=>{
+      if(!__refundOrder){ return; }
+      try{
+        const o = __refundOrder.data;
+        const total = Number(o.totals?.total||0);
+
+        let refund = { mode: __refundMode, at: serverTimestamp() };
+
+        if(__refundMode === "full"){
+          refund.full = true; // will be corrected below
+        }else{
+          const selected = [];
+          const rows = $("rfItemsWrap").querySelectorAll(".line");
+          rows.forEach(row=>{
+            const pid = row.dataset.pid;
+            const nEl = row.querySelector(".n");
+            const qty = Number(nEl?.textContent||0);
+            if(qty>0){
+              const item = (o.items||[]).find(x=>(x.productId||x.name)===pid) || {};
+              selected.push({
+                productId: item.productId || null,
+                name: item.name || pid,
+                qty: qty,
+                unitPrice: Number(item.price||0)
+              });
+            }
+          });
+          if(selected.length===0){
+            toast("Select items","Choose at least 1 item qty.");
+            return;
+          }
+          refund.items = selected;
+        }
+
+        await updateDoc(__refundOrder.ref, {
+          refund: refund,
+          "timestamps.updatedAt": serverTimestamp()
+        });
+        toast("Refund recorded", `Order #${o.orderNo||__refundOrder.id}`);
+        openDrawer("refundDrawer", false);
+        refreshRecent();
+      }catch(e){
+        console.error(e);
+        toast("Refund failed", e?.message || "");
+      }
+    };
       try{
         const orderRef = doc(db, `brands/${BRAND_ID}/orders/${orderId}`);
         await updateDoc(orderRef, {
@@ -1232,7 +1701,15 @@
       }
     }
 
-    // ---------- Sign out ----------
+    
+    // keep checkout summary updated while open
+    window.__coLive = setInterval(()=>{
+      if($("checkoutDrawer").style.display==="flex"){
+        renderCheckoutSummary();
+      }
+    }, 600);
+
+// ---------- Sign out ----------
     $("btnSignOut").onclick = async ()=>{
       // clear staff
       localStorage.removeItem("luma_pos_staff");
