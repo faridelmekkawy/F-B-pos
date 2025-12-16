@@ -123,9 +123,12 @@
 .pillInput{display:flex;gap:6px;align-items:center;background:var(--panel-soft);border:1px solid var(--border);padding:6px 10px;border-radius:999px}
 @media print{
   body *{visibility:hidden!important;}
-  #page-reports, #page-reports *{visibility:visible!important;}
-  #page-reports{position:absolute;left:0;top:0;width:100%;}
+  .print-area, .print-area *{visibility:visible!important;}
+  .print-area{position:absolute;left:0;top:0;width:100%;}
+  /* avoid clipping */
+  canvas{max-width:100%!important;}
 }
+
 
 /* utility */
 .hidden{display:none!important;}
@@ -1218,6 +1221,57 @@ const $ = (id)=>{
     $("authPill").textContent = text;
   }
 
+  /**************************************************************
+   * Print helpers (PDF export that includes charts)
+   **************************************************************/
+  let CURRENT_PAGE = "overview";
+  let __printSwaps = [];
+
+  function setPrintAreaByKey(key){
+    // remove previous
+    document.querySelectorAll(".print-area").forEach(el=>el.classList.remove("print-area"));
+    const section = document.getElementById("page-"+key);
+    if(section) section.classList.add("print-area");
+  }
+
+  function swapCanvasToImages(container){
+    __printSwaps = [];
+    if(!container) return;
+    const canvases = container.querySelectorAll("canvas");
+    canvases.forEach(cv=>{
+      try{
+        const img = document.createElement("img");
+        img.alt = "chart";
+        img.style.maxWidth = "100%";
+        img.style.display = "block";
+        img.style.borderRadius = "12px";
+        img.src = cv.toDataURL("image/png", 1.0);
+        cv.style.display = "none";
+        cv.parentNode.insertBefore(img, cv.nextSibling);
+        __printSwaps.push({canvas:cv, img});
+      }catch(e){
+        // ignore chart swap failures
+      }
+    });
+  }
+
+  function restoreCanvasSwaps(){
+    __printSwaps.forEach(({canvas,img})=>{
+      try{ if(img && img.parentNode) img.parentNode.removeChild(img); }catch(e){}
+      try{ if(canvas) canvas.style.display = ""; }catch(e){}
+    });
+    __printSwaps = [];
+  }
+
+  window.addEventListener("beforeprint", ()=>{
+    setPrintAreaByKey(CURRENT_PAGE);
+    swapCanvasToImages(document.querySelector(".print-area"));
+  });
+  window.addEventListener("afterprint", ()=>{
+    restoreCanvasSwaps();
+  });
+
+
   
   function customerKeyFromOrder(o){
     const phone = String(o?.customer?.phone||"").trim();
@@ -1562,6 +1616,8 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
   }
 
   function showPage(key){
+    CURRENT_PAGE = key;
+    setPrintAreaByKey(key);
     // tabs
     [...$("tabs").children].forEach((t,i)=>{
       t.classList.toggle("active", PAGES[i][0]===key);
@@ -1750,11 +1806,39 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
     return ts >= start && ts <= end;
   }
 
+  
+  function calcRefundAmount(o){
+    const total = Number(o?.totals?.total||0);
+    const r = o?.refund;
+    if(!r || !r.at) return 0;
+
+    // POS-compatible refund schema:
+    // - full refund: refund.full === true OR refund.mode === "full"
+    // - partial refund by items: refund.items = [{name, qty, unitPrice}]
+    // - optional amount-based refund: refund.amount
+    if(r.full === true || String(r.mode||"").toLowerCase()==="full") return total;
+
+    if(Array.isArray(r.items) && r.items.length){
+      const sum = r.items.reduce((a,it)=>{
+        const qty = Number(it?.qty||0);
+        const up = Number(it?.unitPrice||it?.price||0);
+        return a + (qty*up);
+      },0);
+      return Math.max(0, sum);
+    }
+
+    if(r.amount!=null && r.amount!=="" && isFinite(Number(r.amount))) return Math.max(0, Number(r.amount));
+
+    // Fallback: treat as full if we can't interpret
+    return total;
+  }
+
   function calcNetTotal(o){
     const total = Number(o?.totals?.total||0);
-    const refundAmt = (o?.refund && o.refund.at) ? (o.refund.amount==null ? total : Number(o.refund.amount||0)) : 0;
-    return Math.max(0, total - refundAmt);
+    const refunded = calcRefundAmount(o);
+    return Math.max(0, total - refunded);
   }
+
 
   function renderOverview(){
     if(!ordersCache) return;
@@ -1770,14 +1854,7 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
     const ordersCount = validSalesOrders.length;
     const aov = ordersCount ? totalSales/ordersCount : 0;
 
-    const refundsAmt = validSalesOrders.reduce((a,o)=>{
-      if(o?.refund?.at){
-        const total = Number(o?.totals?.total||0);
-        const r = (o.refund.amount==null) ? total : Number(o.refund.amount||0);
-        return a + r;
-      }
-      return a;
-    },0);
+        const refundsAmt = validSalesOrders.reduce((a,o)=> a + calcRefundAmount(o), 0);
 
     const netSales = validSalesOrders.reduce((a,o)=>a+calcNetTotal(o),0);
 
@@ -1844,8 +1921,9 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
     if(stuckCount>=10) alerts.push(`⚠️ ${stuckCount} orders stuck in Preparing for > ${stuckThresholdMin} min`);
 
     // High refund spike (simple heuristic)
-    const refundRate = ordersCount ? (validSalesOrders.filter(o=>o?.refund?.at).length / ordersCount) : 0;
-    if(refundRate >= 0.08 && validSalesOrders.filter(o=>o?.refund?.at).length >= 3){
+        const refundedOrdersCount = validSalesOrders.filter(o=>o?.refund?.at).length;
+    const refundRate = ordersCount ? (refundedOrdersCount / ordersCount) : 0;
+        if(refundRate >= 0.08 && refundedOrdersCount >= 3){
       alerts.push(`⚠️ Refund spike: ${(refundRate*100).toFixed(1)}% of orders refunded`);
     }
 
@@ -2080,7 +2158,7 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
     }).map(o=>{
       const at = o.refund.at.toDate();
       const total = Number(o?.totals?.total||0);
-      const amt = (o.refund.amount==null) ? total : Number(o.refund.amount||0);
+      const amt = calcRefundAmount(o);
       return {
         id: o.id,
         orderNo: o.orderNumber || o.shortId || o.id.slice(-6),
@@ -2138,7 +2216,7 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
     }).map(o=>{
       const at = o.refund.at.toDate();
       const total = Number(o?.totals?.total||0);
-      const amt = (o.refund.amount==null) ? total : Number(o.refund.amount||0);
+      const amt = calcRefundAmount(o);
       return [
         o.id,
         (o.orderNumber||o.shortId||o.id.slice(-6)),
@@ -2255,7 +2333,11 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
     tl.push(`<b>Paid:</b> ${tsToStr(o?.payment?.paidAt)}`);
     if(o?.timestamps?.completedAt) tl.push(`<b>Completed:</b> ${tsToStr(o.timestamps.completedAt)}`);
     if(o?.timestamps?.cancelledAt) tl.push(`<b>Cancelled:</b> ${tsToStr(o.timestamps.cancelledAt)}`);
-    if(o?.refund?.at) tl.push(`<b>Refund:</b> ${fmtMoney(o.refund.amount==null ? o?.totals?.total : o.refund.amount)} at ${tsToStr(o.refund.at)}${o.refund.reason ? " — "+o.refund.reason : ""}`);
+        if(o?.refund?.at){
+      const rAmt = calcRefundAmount(o);
+      const rReason = o?.refund?.reason ? (" — "+o.refund.reason) : "";
+      tl.push(`<b>Refund:</b> ${fmtMoney(rAmt)} at ${tsToStr(o.refund.at)}${rReason}`);
+    }
     $("odTimeline").innerHTML = tl.join("<br>");
 
     // QR preview (simple link)
@@ -2298,19 +2380,35 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
   $("btnOdRefund").onclick = async ()=>{
     if(!selectedOrder) return;
     if(!confirm("Record refund?")) return;
-    const amtRaw = $("refundAmt").value;
-    const reason = $("refundReason").value.trim();
-    const amt = amtRaw==="" ? null : Number(amtRaw);
+
+    const amtRaw = ($("refundAmt")?.value ?? "").toString().trim();
+    const reason = ($("refundReason")?.value ?? "").toString().trim();
+
+    // POS-compatible schema
+    const total = Number(selectedOrder?.totals?.total||0);
+    const isFull = amtRaw === "";
+    const amt = isFull ? total : Number(amtRaw);
+
+    if(!isFull && (!isFinite(amt) || amt < 0 || amt > total)){
+      return alert("Refund amount must be between 0 and order total.");
+    }
+
+    const cashierName = (selectedOrder?.meta?.staffUsername || selectedOrder?.payment?.cashier || auth.currentUser?.email || "—");
+    const payMethod = (selectedOrder?.payment?.method || null);
+
+    const refundObj = isFull
+      ? { full:true, mode:"full", amount: total, reason: reason||null, at: serverTimestamp(), cashier: cashierName, method: payMethod, source:"dashboard" }
+      : { full:false, mode:"amount", amount: amt, reason: reason||null, at: serverTimestamp(), cashier: cashierName, method: payMethod, source:"dashboard" };
+
     try{
       await updateDoc(doc(db,"brands",BRAND_ID,"orders",selectedOrder.id), {
-        refund: { amount: amt, reason: reason||null, at: serverTimestamp() },
+        refund: refundObj,
         "timestamps.updatedAt": serverTimestamp()
       });
       $("refundAmt").value="";
       $("refundReason").value="";
     }catch(e){ alert(e.message||"Failed"); }
   };
-
   $("btnOdNote").onclick = async ()=>{
     if(!selectedOrder) return;
     const note = prompt("Internal note (for disputes):");
@@ -2372,7 +2470,7 @@ if(tbt) tbt.textContent = BRAND?.name ? `${BRAND.name} — Dashboard` : "Brand D
       const gross = Number(o?.totals?.subtotal||0);
       const disc = Number(o?.totals?.discount||0);
       const total = Number(o?.totals?.total||0);
-      const refunded = o?.refund?.at ? Number(o?.refund?.amount==null ? total : (o?.refund?.amount||0)) : 0;
+      const refunded = o?.refund?.at ? calcRefundAmount(o) : 0;
       rec.count += 1;
       rec.gross += gross;
       rec.discount += disc;
