@@ -20,7 +20,7 @@ const Login = () => {
     event.preventDefault();
     const selected = staff.find((member) => member.id === staffId);
     if (!selected) {
-      setError('Select a staff member.');
+      setError('Select a staff member or create one in the dashboard.');
       return;
     }
     if (selected.pin !== pin) {
@@ -61,12 +61,17 @@ const Login = () => {
             className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 p-2"
             value={staffId}
             onChange={(event) => setStaffId(event.target.value)}
+            disabled={!staff.length}
           >
-            {staff.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name} · {member.role}
-              </option>
-            ))}
+            {staff.length ? (
+              staff.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name} · {member.role}
+                </option>
+              ))
+            ) : (
+              <option value="">No staff yet</option>
+            )}
           </select>
         </label>
         <label className="block text-sm">

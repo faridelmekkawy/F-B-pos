@@ -67,51 +67,6 @@ const STORAGE_KEYS = {
   shifts: 'pos.shifts'
 };
 
-const seedCategories: Category[] = [
-  { id: 'cat-burgers', name: 'Burgers', sortOrder: 1, isActive: true },
-  { id: 'cat-sides', name: 'Sides', sortOrder: 2, isActive: true },
-  { id: 'cat-drinks', name: 'Drinks', sortOrder: 3, isActive: true }
-];
-
-const seedProducts: Product[] = [
-  {
-    id: 'prod-classic-burger',
-    categoryId: 'cat-burgers',
-    name: 'Classic Burger',
-    price: 9.5,
-    isAvailable: true
-  },
-  {
-    id: 'prod-cheese-burger',
-    categoryId: 'cat-burgers',
-    name: 'Cheese Burger',
-    price: 10.5,
-    isAvailable: true
-  },
-  {
-    id: 'prod-fries',
-    categoryId: 'cat-sides',
-    name: 'Crispy Fries',
-    price: 3.25,
-    isAvailable: true
-  },
-  {
-    id: 'prod-soda',
-    categoryId: 'cat-drinks',
-    name: 'Soda',
-    price: 2.5,
-    isAvailable: true
-  }
-];
-
-const seedStaff: Staff[] = [
-  { id: 'staff-owner', name: 'Olivia Owner', role: 'owner', pin: '1234' },
-  { id: 'staff-manager', name: 'Mason Manager', role: 'manager', pin: '2345' },
-  { id: 'staff-cashier', name: 'Casey Cashier', role: 'cashier', pin: '3456' },
-  { id: 'staff-kitchen', name: 'Kori Kitchen', role: 'kitchen', pin: '4567' },
-  { id: 'staff-viewer', name: 'Vera Viewer', role: 'viewer', pin: '5678' }
-];
-
 const readStorage = <T>(key: string, fallback: T): T => {
   const raw = localStorage.getItem(key);
   if (!raw) {
@@ -130,16 +85,16 @@ const writeStorage = <T>(key: string, value: T) => {
 
 export const ensureSeedData = () => {
   if (!localStorage.getItem(STORAGE_KEYS.categories)) {
-    writeStorage(STORAGE_KEYS.categories, seedCategories);
+    writeStorage(STORAGE_KEYS.categories, [] as Category[]);
   }
   if (!localStorage.getItem(STORAGE_KEYS.products)) {
-    writeStorage(STORAGE_KEYS.products, seedProducts);
+    writeStorage(STORAGE_KEYS.products, [] as Product[]);
   }
   if (!localStorage.getItem(STORAGE_KEYS.orders)) {
     writeStorage(STORAGE_KEYS.orders, [] as Order[]);
   }
   if (!localStorage.getItem(STORAGE_KEYS.staff)) {
-    writeStorage(STORAGE_KEYS.staff, seedStaff);
+    writeStorage(STORAGE_KEYS.staff, [] as Staff[]);
   }
   if (!localStorage.getItem(STORAGE_KEYS.shifts)) {
     writeStorage(STORAGE_KEYS.shifts, [] as Shift[]);
