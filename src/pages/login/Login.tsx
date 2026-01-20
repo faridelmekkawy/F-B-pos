@@ -1,10 +1,13 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createSession } from '../../lib/session';
-import { getStaff } from '../../lib/store';
+import { ensureSeedData, getStaff } from '../../lib/store';
 
 const Login = () => {
-  const staff = useMemo(() => getStaff(), []);
+  const staff = useMemo(() => {
+    ensureSeedData();
+    return getStaff();
+  }, []);
   const [staffId, setStaffId] = useState(staff[0]?.id ?? '');
   const [pin, setPin] = useState('');
   const [deviceType, setDeviceType] = useState<'pos' | 'kitchen' | 'dashboard' | 'customer'>(

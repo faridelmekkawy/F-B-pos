@@ -30,29 +30,31 @@ const AppLayout = () => {
             ) : null}
           </div>
           <nav className="flex flex-wrap items-center gap-3 text-sm">
-            <Link className="text-slate-300 hover:text-white" to="/dashboard">
-              Dashboard
-            </Link>
-            <Link className="text-slate-300 hover:text-white" to="/pos">
-              POS
-            </Link>
-            <Link className="text-slate-300 hover:text-white" to="/kitchen">
-              Kitchen
-            </Link>
-            <Link className="text-slate-300 hover:text-white" to="/customer">
-              Customer
-            </Link>
-            <Link className="text-slate-300 hover:text-white" to="/receipt/order-123">
-              Receipt
-            </Link>
             {session ? (
-              <button
-                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-200"
-                onClick={handleLogout}
-                type="button"
-              >
-                Log out
-              </button>
+              <>
+                <Link className="text-slate-300 hover:text-white" to="/dashboard">
+                  Dashboard
+                </Link>
+                <Link className="text-slate-300 hover:text-white" to="/pos">
+                  POS
+                </Link>
+                <Link className="text-slate-300 hover:text-white" to="/kitchen">
+                  Kitchen
+                </Link>
+                <Link className="text-slate-300 hover:text-white" to="/customer">
+                  Customer
+                </Link>
+                <Link className="text-slate-300 hover:text-white" to="/receipt/order-123">
+                  Receipt
+                </Link>
+                <button
+                  className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  Log out
+                </button>
+              </>
             ) : (
               <Link className="rounded-full border border-slate-700 px-3 py-1 text-xs" to="/login">
                 Sign in

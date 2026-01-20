@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createOrder, getCategories, getProducts } from '../../lib/store';
+import type { Shift } from '../../lib/store';
+import {
+  createOrder,
+  getActiveShift,
+  getCategories,
+  getProducts,
+  openShift,
+  closeShift
+} from '../../lib/store';
 
 type CartItem = {
   productId: string;
@@ -18,6 +26,10 @@ const Pos = () => {
   const [discountType, setDiscountType] = useState<'none' | 'percent' | 'fixed'>('none');
   const [discountValue, setDiscountValue] = useState('0');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'wallet'>('cash');
+  const [cashReceived, setCashReceived] = useState('0');
+  const [shiftOpenCash, setShiftOpenCash] = useState('100');
+  const [shiftCloseCash, setShiftCloseCash] = useState('0');
+  const [activeShift, setActiveShift] = useState<Shift | null>(() => getActiveShift() ?? null);
 
   const filteredProducts = products.filter(
     (product) => product.categoryId === selectedCategory && product.isAvailable
@@ -58,6 +70,18 @@ const Pos = () => {
       : 0;
   const tax = subtotal * 0.08;
   const total = Math.max(subtotal - discountAmount, 0) + tax;
+  const receivedAmount = Number(cashReceived || 0);
+  const changeDue = paymentMethod === 'cash' ? Math.max(receivedAmount - total, 0) : 0;
+
+  const handleOpenShift = () => {
+    const shifts = openShift(Number(shiftOpenCash || 0));
+    setActiveShift(shifts.find((shift) => !shift.closedAt) ?? null);
+  };
+
+  const handleCloseShift = () => {
+    closeShift(Number(shiftCloseCash || 0));
+    setActiveShift(null);
+  };
 
   const handleCheckout = () => {
     if (!cart.length) {
@@ -82,12 +106,15 @@ const Pos = () => {
         total
       },
       payment: {
-        method: paymentMethod
+        method: paymentMethod,
+        received: paymentMethod === 'cash' ? receivedAmount : undefined,
+        change: paymentMethod === 'cash' ? changeDue : undefined
       }
     });
     setCart([]);
     setDiscountType('none');
     setDiscountValue('0');
+    setCashReceived('0');
     navigate(`/receipt/${order.id}`);
   };
 
@@ -132,6 +159,52 @@ const Pos = () => {
           </div>
         </div>
         <div className="space-y-4">
+          <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 space-y-3">
+            <h3 className="text-lg font-medium">Shift</h3>
+            {activeShift ? (
+              <div className="space-y-2 text-sm text-slate-300">
+                <p>Opened at {new Date(activeShift.openedAt).toLocaleTimeString()}</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={shiftCloseCash}
+                    onChange={(event) => setShiftCloseCash(event.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="rounded-lg border border-slate-700 px-3 py-2 text-sm"
+                    onClick={handleCloseShift}
+                  >
+                    Close shift
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 text-sm text-slate-300">
+                <p>No active shift.</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={shiftOpenCash}
+                    onChange={(event) => setShiftOpenCash(event.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950"
+                    onClick={handleOpenShift}
+                  >
+                    Open shift
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
             <h3 className="text-lg font-medium">Current order</h3>
             <ul className="mt-4 space-y-2 text-sm text-slate-300">
@@ -193,6 +266,20 @@ const Pos = () => {
               <option value="card">Card</option>
               <option value="wallet">Wallet</option>
             </select>
+            {paymentMethod === 'cash' ? (
+              <div className="flex items-center gap-2">
+                <input
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={cashReceived}
+                  onChange={(event) => setCashReceived(event.target.value)}
+                  placeholder="Cash received"
+                />
+                <span className="text-sm text-slate-400">Change ${changeDue.toFixed(2)}</span>
+              </div>
+            ) : null}
             <div className="space-y-1 text-sm text-slate-300">
               <div className="flex items-center justify-between">
                 <span>Subtotal</span>

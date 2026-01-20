@@ -44,6 +44,14 @@ export type Order = {
   createdAt: string;
 };
 
+export type Shift = {
+  id: string;
+  openedAt: string;
+  closedAt?: string;
+  openingCash: number;
+  closingCash?: number;
+};
+
 export type Staff = {
   id: string;
   name: string;
@@ -55,7 +63,8 @@ const STORAGE_KEYS = {
   categories: 'pos.categories',
   products: 'pos.products',
   orders: 'pos.orders',
-  staff: 'pos.staff'
+  staff: 'pos.staff',
+  shifts: 'pos.shifts'
 };
 
 const seedCategories: Category[] = [
@@ -132,12 +141,18 @@ export const ensureSeedData = () => {
   if (!localStorage.getItem(STORAGE_KEYS.staff)) {
     writeStorage(STORAGE_KEYS.staff, seedStaff);
   }
+  if (!localStorage.getItem(STORAGE_KEYS.shifts)) {
+    writeStorage(STORAGE_KEYS.shifts, [] as Shift[]);
+  }
 };
 
 export const getCategories = () => readStorage<Category[]>(STORAGE_KEYS.categories, []);
 export const getProducts = () => readStorage<Product[]>(STORAGE_KEYS.products, []);
 export const getOrders = () => readStorage<Order[]>(STORAGE_KEYS.orders, []);
 export const getStaff = () => readStorage<Staff[]>(STORAGE_KEYS.staff, []);
+export const getShifts = () => readStorage<Shift[]>(STORAGE_KEYS.shifts, []);
+
+export const getActiveShift = () => getShifts().find((shift) => !shift.closedAt);
 
 export const saveCategory = (category: Category) => {
   const categories = getCategories();
@@ -199,5 +214,35 @@ export const completeOrderPayment = (orderId: string, payment: Order['payment'])
       : order
   );
   writeStorage(STORAGE_KEYS.orders, next);
+  return next;
+};
+
+export const openShift = (openingCash: number) => {
+  const shifts = getShifts();
+  if (shifts.some((shift) => !shift.closedAt)) {
+    return shifts;
+  }
+  const nextShift: Shift = {
+    id: `shift-${Date.now()}`,
+    openedAt: new Date().toISOString(),
+    openingCash
+  };
+  const next = [nextShift, ...shifts];
+  writeStorage(STORAGE_KEYS.shifts, next);
+  return next;
+};
+
+export const closeShift = (closingCash: number) => {
+  const shifts = getShifts();
+  const next = shifts.map((shift) =>
+    shift.closedAt
+      ? shift
+      : {
+          ...shift,
+          closingCash,
+          closedAt: new Date().toISOString()
+        }
+  );
+  writeStorage(STORAGE_KEYS.shifts, next);
   return next;
 };
