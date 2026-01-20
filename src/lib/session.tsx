@@ -33,6 +33,14 @@ export const loadSession = (): SessionRecord | null => {
   }
 };
 
+export const createSession = (session: SessionRecord) => {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+};
+
+export const clearSession = () => {
+  localStorage.removeItem(SESSION_KEY);
+};
+
 export const SessionGuard = ({
   deviceType,
   roles,
@@ -40,13 +48,13 @@ export const SessionGuard = ({
 }: PropsWithChildren<{ deviceType: DeviceType; roles: StaffRole[] }>) => {
   const session = loadSession();
   if (!session) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   if (session.deviceType !== deviceType) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   if (!roles.includes(session.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   return <>{children}</>;
 };

@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
+import Login from './pages/login/Login';
 import CustomerDisplay from './pages/customer/CustomerDisplay';
 import Dashboard from './pages/dashboard/Dashboard';
 import Kitchen from './pages/kitchen/Kitchen';
@@ -11,6 +12,7 @@ const App = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
+        <Route path="/login" element={<Login />} />
         <Route
           path="/dashboard"
           element={
@@ -38,7 +40,7 @@ const App = () => {
         <Route
           path="/customer"
           element={
-            <SessionGuard deviceType="customer" roles={['system']}>
+            <SessionGuard deviceType="customer" roles={['system', 'viewer', 'owner', 'manager']}>
               <CustomerDisplay />
             </SessionGuard>
           }
@@ -51,7 +53,7 @@ const App = () => {
             </SessionGuard>
           }
         />
-        <Route path="/" element={<Navigate to="/pos" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
       </Route>
     </Routes>
   );

@@ -9,3 +9,16 @@
 body {
   font-family: 'Inter', system-ui, sans-serif;
 }
+
+@media print {
+  header,
+  nav,
+  button {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+}
