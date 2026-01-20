@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function vendorMatch() {
+      return request.resource.data.vendorId == resource.data.vendorId;
+    }
+
+    function hasVendorId() {
+      return request.resource.data.vendorId is string;
+    }
+
+    function sameVendorId() {
+      return request.auth.token.vendorId == resource.data.vendorId;
+    }
+
+    function sameVendorIdOnCreate() {
+      return request.auth.token.vendorId == request.resource.data.vendorId;
+    }
+
+    match /vendors/{vendorId} {
+      allow read: if isSignedIn() && request.auth.token.vendorId == vendorId;
+      allow create, update: if isSignedIn() && request.auth.token.vendorId == vendorId;
+    }
+
+    match /staff/{staffId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+
+    match /devices/{deviceId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+
+    match /products/{productId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update, delete: if false;
+    }
+
+    match /shifts/{shiftId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+
+    match /imports/{importId} {
+      allow read: if isSignedIn() && sameVendorId();
+      allow create: if isSignedIn() && sameVendorIdOnCreate();
+      allow update: if isSignedIn() && sameVendorId() && vendorMatch();
+      allow delete: if false;
+    }
+  }
+}

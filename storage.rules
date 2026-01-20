@@ -1,0 +1,17 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function sameVendorId(pathVendorId) {
+      return request.auth.token.vendorId == pathVendorId;
+    }
+
+    match /vendorAssets/{vendorId}/{allPaths=**} {
+      allow read: if isSignedIn() && sameVendorId(vendorId);
+      allow write: if isSignedIn() && sameVendorId(vendorId);
+    }
+  }
+}
